@@ -62,9 +62,9 @@ impl UI {
 
         thread::spawn(move || {
             let system = init("Csgo Hack");
+            let mut settings = settings.lock().unwrap();
 
             system.main_loop(move |_, ui| {
-                let mut settings = settings.lock().unwrap();
 
                 macro_rules! window {
                             ($name:literal, ($width:literal, $height:literal) : $block:block) => {

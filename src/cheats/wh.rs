@@ -66,7 +66,7 @@ impl CheatModule for WallHack {
                     let glow = glow_manager.add(((glow_index * 0x38) + 0x4) as usize);
                     if settings.wh_enabled {
                         if current_player.is_immune() {
-                            glow.cast().write(&glow_enemy_by_color(settings.wh_inactive_color, settings.wh_full_bloom))
+                            glow.cast().write(&glow_enemy_by_color(settings.wh_inactive_color, settings.wh_full_bloom));
                         } else if player.get_team() != current_player.get_team() {
                             glow.cast().write(&glow_enemy_by_color(settings.wh_enemy_color, settings.wh_full_bloom));
                         } else {
@@ -79,7 +79,6 @@ impl CheatModule for WallHack {
             }
         }
     }
-
 
 
 

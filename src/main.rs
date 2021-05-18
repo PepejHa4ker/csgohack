@@ -434,7 +434,7 @@ fn main() {
 fn inject_cheat(process: Process, mut cheats: Vec<Box<dyn CheatModule>>, netvars: Map<usize>, signatures: Map<usize>) {
     let client = process.get_module("client.dll").unwrap().as_ref().base;
     let engine = process.get_module("engine.dll").unwrap().as_ref().base;
-    let mut settings = Arc::new(Mutex::new(Settings::new()));
+    let settings = Arc::new(Mutex::new(Settings::new()));
     let mut runtime = Runtime {
         process,
         client,
@@ -449,15 +449,15 @@ fn inject_cheat(process: Process, mut cheats: Vec<Box<dyn CheatModule>>, netvars
         UI::start(&runtime);
 
         loop {
-                let settings = runtime.settings.clone();
-                let settings = settings.lock().unwrap();
-                for cheat in &mut cheats {
-                    cheat.handle(&mut runtime, &settings);
-                }
-                sleep(Duration::from_millis(1));
+            let settings = Arc::clone(&runtime.settings);
+            let settings = settings.lock().unwrap();
+            for cheat in &mut cheats {
+                cheat.handle(&mut runtime, &settings);
             }
+            sleep(Duration::from_millis(1));
         }
     }
+}
 
 
 pub trait Inverse {
