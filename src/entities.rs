@@ -132,7 +132,6 @@ pub unsafe trait Player<'a> {
     }
 
     fn get_runtime(&self) -> &'a Runtime;
-
 }
 
 pub struct LocalPlayer<'a> {
@@ -156,14 +155,12 @@ unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
 }
 
 impl<'a> EntityPlayer<'a> {
-    pub fn get(runtime: &'a Runtime, index: usize) -> Option<Self> {
-        unsafe {
-            let inner =runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index * 0x10), true)?;
-            Some(EntityPlayer {
-                runtime,
-                inner,
-            })
-        }
+    pub unsafe fn get(runtime: &'a Runtime, index: usize) -> Option<Self> {
+        let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index * 0x10), true)?;
+        Some(EntityPlayer {
+            runtime,
+            inner,
+        })
     }
 }
 
@@ -178,59 +175,45 @@ unsafe impl<'a> Player<'a> for LocalPlayer<'a> {
 }
 
 impl<'a> LocalPlayer<'a> {
-    pub fn new(runtime: &'a Runtime) -> Option<Self> {
-        unsafe {
-            let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwLocalPlayer"), true)?;
-            Some(LocalPlayer {
-                runtime,
-                inner,
-            })
-        }
+    pub unsafe fn new(runtime: &'a Runtime) -> Option<Self> {
+        let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwLocalPlayer"), true)?;
+        Some(LocalPlayer {
+            runtime,
+            inner,
+        })
     }
 
-    pub fn set_fov(&self, fov: i32) {
-        unsafe {
-            self.inner.add(self.runtime.get_netvar("m_iFOV")).cast::<i32>().write(&fov);
-        }
+    pub unsafe fn set_fov(&self, fov: i32) {
+        self.inner.add(self.runtime.get_netvar("m_iFOV")).cast::<i32>().write(&fov);
     }
 
-    pub fn force_jump(&self) {
-        unsafe {
-            self.runtime.write_offset(self.runtime.get_signature("dwForceJump"), &5, true);
-            sleep(Duration::from_millis(1));
-            self.runtime.write_offset(self.runtime.get_signature("dwForceJump"), &4, true);
-        }
+    pub unsafe fn force_jump(&self) {
+        self.runtime.write_offset(self.runtime.get_signature("dwForceJump"), &5, true);
+        sleep(Duration::from_millis(1));
+        self.runtime.write_offset(self.runtime.get_signature("dwForceJump"), &4, true);
     }
 
-    pub fn force_attack(&self) {
-        unsafe {
-            self.runtime.write_offset(self.runtime.get_signature("dwForceAttack"), &5, true);
-            sleep(Duration::from_millis(1));
-            self.runtime.write_offset(self.runtime.get_signature("dwForceAttack"), &4, true);
-        }
+    pub unsafe fn force_attack(&self) {
+        self.runtime.write_offset(self.runtime.get_signature("dwForceAttack"), &5, true);
+        sleep(Duration::from_millis(1));
+        self.runtime.write_offset(self.runtime.get_signature("dwForceAttack"), &4, true);
     }
 
-    pub fn set_flash_duration(&self, duration: f32) {
-        unsafe {
-            self.inner.add(self.runtime.get_netvar("m_flFlashDuration")).cast().write(&duration);
-        }
+    pub unsafe fn set_flash_duration(&self, duration: f32) {
+        self.inner.add(self.runtime.get_netvar("m_flFlashDuration")).cast().write(&duration);
     }
 
-    pub fn set_velocity(&self, velocity: Vector3<f32>) {
-        unsafe {
-            self.inner.add(0x114).cast().write(&velocity);
-        }
+    pub unsafe fn set_velocity(&self, velocity: Vector3<f32>) {
+        self.inner.add(0x114).cast().write(&velocity);
     }
 
-    pub fn set_view_angles(&self, angles: Vector2<f32>) {
-        unsafe {
-            self.runtime.read_ptr::<usize>(
-                self.runtime.get_signature("dwClientState"), false).unwrap().add(self.runtime.get_signature("dwClientState_ViewAngles")).cast().write(&angles);
-        }
+    pub unsafe fn set_view_angles(&self, angles: Vector2<f32>) {
+        self.runtime.read_ptr::<usize>(
+            self.runtime.get_signature("dwClientState"), false).unwrap().add(self.runtime.get_signature("dwClientState_ViewAngles")).cast().write(&angles);
     }
 
-    pub fn get_punch_angles(&self) -> Vector2<f32> {
-        unsafe { self.inner.add(self.runtime.get_netvar("m_aimPunchAngle")).cast().read() }
+    pub unsafe fn get_punch_angles(&self) -> Vector2<f32> {
+         self.inner.add(self.runtime.get_netvar("m_aimPunchAngle")).cast().read()
     }
 }
 
