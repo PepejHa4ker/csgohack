@@ -207,7 +207,7 @@ impl UI {
                         ui.next_column();
                         ui.checkbox(im_str!("Enabled"), &mut settings.wh_enabled);
                         ui.checkbox(im_str!("Full bloom"), &mut settings.wh_full_bloom);
-;
+
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("Anti Flash", (250.0, 250.0) : {
@@ -257,8 +257,9 @@ impl UI {
                 // slider_grab_color.pop(&ui);
                 // check_mark_color.pop(&ui);
                 // text_color.pop(&ui);
+                sleep(Duration::from_millis(10));
+
             });
-            sleep(Duration::from_millis(10));
         });
     }
 }
