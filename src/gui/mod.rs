@@ -49,7 +49,7 @@ pub fn init(title: &str) -> System {
         FontSource::DefaultFontData {
             config: Some(FontConfig {
                 rasterizer_multiply: 1.75,
-                glyph_ranges: FontGlyphRanges::cyrillic(),
+                glyph_ranges: FontGlyphRanges::default(),
                 ..FontConfig::default()
             }),
         }

@@ -118,35 +118,28 @@ impl UI {
             });
                 window!("Aimbot", (250.0, 250.0) : {
                             // window_title_color.pop(&ui);
-                            ui.checkbox(im_str!("Включен"), &mut settings.aimbot_enabled);
-                            ui.checkbox(im_str!("Анти Отдача"), &mut settings.aimbot_rctl);
-                            hover!("Включить/Выключить антиотдачу в аимботе");
-                            Slider::new(im_str!("Угол")).range(1.0..=180.0).build(&ui, &mut settings.aimbot_angle);
-                            hover!("Максимальный угол между вами и противником");
-                            Slider::new(im_str!("Дистанция")).range(1..=250).build(&ui, &mut settings.aimbot_distance);
-                            hover!("Максимальная дистанция, на которой будет работать аимбот");
+                            ui.checkbox(im_str!("Enabled"), &mut settings.aimbot_enabled);
+                            ui.checkbox(im_str!("Enable Recoil Control"), &mut settings.aimbot_rctl);
+                            Slider::new(im_str!("Angle")).range(1.0..=180.0).build(&ui, &mut settings.aimbot_angle);
+                            Slider::new(im_str!("Distance")).range(1..=250).build(&ui, &mut settings.aimbot_distance);
                             ui.separator();
-                            ui.checkbox(im_str!("Аим Ассист"), &mut settings.aim_assist_enabled);
-                            hover!("Доводит прицел до цели, если выбранная часть тела находится в указанном радиусе");
-                            Slider::new(im_str!("Радиус")).range(1..=10).build(&ui, &mut settings.aim_assist_angle);
+                            ui.checkbox(im_str!("Aim assist"), &mut settings.aim_assist_enabled);
+                            Slider::new(im_str!("Radius")).range(1..=10).build(&ui, &mut settings.aim_assist_angle);
                             let selected_name = match settings.aim_target {
-                                8 => "Голова",
-                                5 => "Тело",
-                                37 => "Рука",
+                                8 => "Head",
+                                5 => "Body",
                                 _ => "Не выбрано"
 
                             };
 
                             ComboBox::new(im_str!("Кость")).preview_mode(ComboBoxPreviewMode::Full).preview_value(ImStr::from_cstr_unchecked(CString::new(selected_name).unwrap().as_c_str())).build(&ui, || {
-                                if Selectable::new(im_str!("Голова")).selected(settings.aim_target == 8).build(&ui) {
+                                if Selectable::new(im_str!("Head")).selected(settings.aim_target == 8).build(&ui) {
                                      settings.aim_target = 8;
                                 }
-                                if Selectable::new(im_str!("Тело")).selected(settings.aim_target == 5).build(&ui) {
+                                if Selectable::new(im_str!("Body")).selected(settings.aim_target == 5).build(&ui) {
                                       settings.aim_target = 5;
                                 }
-                                if Selectable::new(im_str!("Рука")).selected(settings.aim_target == 37).build(&ui) {
-                                      settings.aim_target = 37;
-                                }
+
 
                             });
 
@@ -159,17 +152,14 @@ impl UI {
                             ui.checkbox(im_str!("FOV"), &mut settings.fov_enabled);
                             ui.separator();
 
-                            Slider::new(im_str!("Смена поля зрения")).range(-180..=180).build(&ui, &mut settings.fov);
-                            hover!("ВАЖНО! При отрицательных значениях голова будет перевернута");
+                            Slider::new(im_str!("Fov Changer")).range(-180..=180).build(&ui, &mut settings.fov);
 
-                            ui.checkbox(im_str!("RCS"), &mut settings.recoil_enabled);
+                            ui.checkbox(im_str!("Recoil Control"), &mut settings.recoil_enabled);
                             ui.separator();
-                            Slider::new(im_str!("Выстрел")).range(1..=100).build(&ui, &mut settings.recoil_shots);
-                            hover!("Выстрел, после которого нужно начинать гасить отдачу");
+                            Slider::new(im_str!("Shot")).range(1..=100).build(&ui, &mut settings.recoil_shots);
 
                             ui.checkbox(im_str!("FastTap"), &mut settings.fast_tap_enabled);
                             ui.separator();
-                            hover!("Быстрые выстрелы, зажав ЛКМ")
 
 
                         });
@@ -179,13 +169,11 @@ impl UI {
                 window!("Trigger bot", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
 
-                        ui.checkbox(im_str!("Включен"), &mut settings.trigger_enabled);
-                        ui.checkbox(im_str!("Стрелять только прицелившись"), &mut settings.trigger_only_in_scope);
-                        hover!("Триггер бот не будет срабатывать если у Вас в руках снайперская винтовка и Вы не целитесь (чтобы избежать случайных выстрелов)");
+                        ui.checkbox(im_str!("Enabled"), &mut settings.trigger_enabled);
+                        ui.checkbox(im_str!("Only scope"), &mut settings.trigger_only_in_scope);
                         ui.separator();
-                        Slider::new(im_str!("Задержка (ms)")).range(0..=1000).build(&ui, &mut settings.trigger_delay);
-                        hover!("Задержка перед выстрелом");
-                        Slider::new(im_str!("Дистанция")).range(0..=250).build(&ui, &mut settings.trigger_distance);
+                        Slider::new(im_str!("Delay (ms)")).range(0..=1000).build(&ui, &mut settings.trigger_delay);
+                        Slider::new(im_str!("Max distance")).range(0..=250).build(&ui, &mut settings.trigger_distance);
                         hover!("Максимальная дистанция, на которой будет работать триггер");
                         ui.separator();
                     });
@@ -193,7 +181,7 @@ impl UI {
                 window!("WallHack", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
                         ui.columns(2, im_str!("###wh"), true);
-                        ColorEdit::new(im_str!("Цвет врага"), EditableColor::Float4(&mut settings.wh_enemy_color))
+                        ColorEdit::new(im_str!("Enemy color"), EditableColor::Float4(&mut settings.wh_enemy_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -201,7 +189,7 @@ impl UI {
                             .inputs(false)
                             .alpha(true)
                             .build(&ui);
-                        ColorEdit::new(im_str!("Цвет союзника"), EditableColor::Float4(&mut settings.wh_local_color))
+                        ColorEdit::new(im_str!("Teammate color"), EditableColor::Float4(&mut settings.wh_local_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -209,7 +197,7 @@ impl UI {
                             .inputs(false)
                             .alpha(true)
                             .build(&ui);
-                        ColorEdit::new(im_str!("Цвет неуязвимого"), EditableColor::Float4(&mut settings.wh_inactive_color))
+                        ColorEdit::new(im_str!("Immune color"), EditableColor::Float4(&mut settings.wh_inactive_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -218,55 +206,55 @@ impl UI {
                             .alpha(true)
                             .build(&ui);
                         ui.next_column();
-                        ui.checkbox(im_str!("Полное заполнение"), &mut settings.wh_full_bloom);
-                        ui.checkbox(im_str!("Включен"), &mut settings.wh_enabled);
+                        ui.checkbox(im_str!("Enabled"), &mut settings.wh_enabled);
+                        ui.checkbox(im_str!("Full bloom"), &mut settings.wh_full_bloom);
 ;
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("Anti Flash", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
-                        ui.checkbox(im_str!("Включен"), &mut settings.flash_enabled);
+                        ui.checkbox(im_str!("Enabled"), &mut settings.flash_enabled);
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("Bhop", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
-                        ui.checkbox(im_str!("Включен"), &mut settings.bhop_enabled);
+                        ui.checkbox(im_str!("Enabled"), &mut settings.bhop_enabled);
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
-                window!("Radar", (250.0, 250.0) : {
-                        // window_title_color.pop(&ui);
-                        ui.checkbox(im_str!("Включен"), &mut settings.radar_enabled);
-                        ui.separator();
-                        let draw_list = ui.get_window_draw_list();
-                        let win_pos: Vector2<f32> = Vector2::new(*ui.window_pos().get(0).unwrap(), *ui.window_pos().get(1).unwrap());
-                        let win_size: Vector2<f32> = Vector2::new(*ui.window_size().get(0).unwrap(), *ui.window_size().get(1).unwrap());
-                        draw_list.add_line(
-                                       [win_pos.x + win_size.x * 0.5, win_pos.y],
-                                       [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y],
-                                       ImColor::from([70.0/255.0, 70.0/255.0, 70.0/255.0, 1.0]))
-                                       .build();
-                        draw_list.add_line(
-                                       [win_pos.x, win_pos.y + win_size.y * 0.5],
-                                       [win_pos.x + win_size.x, win_pos.y + win_size.y * 0.5],
-                                       ImColor::from([70.0/255.0, 70.0/255.0, 70.0/255.0, 1.0]))
-                                       .build();
-                        draw_list.add_line(
-                                       [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5],
-                                       [win_pos.x, win_pos.y],
-                                       ImColor::from([90.0/255.0, 90.0/255.0, 90.0/255.0, 1.0]))
-                                       .build();
-                        draw_list.add_line(
-                                       [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5],
-                                       [win_pos.x + win_size.x, win_pos.y],
-                                       ImColor::from([90.0/255.0, 90.0/255.0, 90.0/255.0, 1.0]))
-                                       .build();
-
-                        draw_list.add_circle([win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5], 4.5, ImColor::from([1.0, 1.0, 1.0, 1.0])).build();
-
-
-                });
+                // window!("Radar", (250.0, 250.0) : {
+                //         // window_title_color.pop(&ui);
+                //         ui.checkbox(im_str!("Enabled"), &mut settings.radar_enabled);
+                //         ui.separator();
+                //         let draw_list = ui.get_window_draw_list();
+                //         let win_pos: Vector2<f32> = Vector2::new(*ui.window_pos().get(0).unwrap(), *ui.window_pos().get(1).unwrap());
+                //         let win_size: Vector2<f32> = Vector2::new(*ui.window_size().get(0).unwrap(), *ui.window_size().get(1).unwrap());
+                //         draw_list.add_line(
+                //                        [win_pos.x + win_size.x * 0.5, win_pos.y],
+                //                        [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y],
+                //                        ImColor::from([70.0/255.0, 70.0/255.0, 70.0/255.0, 1.0]))
+                //                        .build();
+                //         draw_list.add_line(
+                //                        [win_pos.x, win_pos.y + win_size.y * 0.5],
+                //                        [win_pos.x + win_size.x, win_pos.y + win_size.y * 0.5],
+                //                        ImColor::from([70.0/255.0, 70.0/255.0, 70.0/255.0, 1.0]))
+                //                        .build();
+                //         draw_list.add_line(
+                //                        [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5],
+                //                        [win_pos.x, win_pos.y],
+                //                        ImColor::from([90.0/255.0, 90.0/255.0, 90.0/255.0, 1.0]))
+                //                        .build();
+                //         draw_list.add_line(
+                //                        [win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5],
+                //                        [win_pos.x + win_size.x, win_pos.y],
+                //                        ImColor::from([90.0/255.0, 90.0/255.0, 90.0/255.0, 1.0]))
+                //                        .build();
+                //
+                //         draw_list.add_circle([win_pos.x + win_size.x * 0.5, win_pos.y + win_size.y * 0.5], 4.5, ImColor::from([1.0, 1.0, 1.0, 1.0])).build();
+                //
+                //
+                // });
                 // slider_grab_color.pop(&ui);
                 // check_mark_color.pop(&ui);
                 // text_color.pop(&ui);
