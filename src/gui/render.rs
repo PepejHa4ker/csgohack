@@ -128,11 +128,11 @@ impl UI {
                             let selected_name = match settings.aim_target {
                                 8 => "Head",
                                 5 => "Body",
-                                _ => "Не выбрано"
+                                _ => "N/A"
 
                             };
 
-                            ComboBox::new(im_str!("Кость")).preview_mode(ComboBoxPreviewMode::Full).preview_value(ImStr::from_cstr_unchecked(CString::new(selected_name).unwrap().as_c_str())).build(&ui, || {
+                            ComboBox::new(im_str!("Bone")).preview_mode(ComboBoxPreviewMode::Full).preview_value(ImStr::from_cstr_unchecked(CString::new(selected_name).unwrap().as_c_str())).build(&ui, || {
                                 if Selectable::new(im_str!("Head")).selected(settings.aim_target == 8).build(&ui) {
                                      settings.aim_target = 8;
                                 }
@@ -174,7 +174,6 @@ impl UI {
                         ui.separator();
                         Slider::new(im_str!("Delay (ms)")).range(0..=1000).build(&ui, &mut settings.trigger_delay);
                         Slider::new(im_str!("Max distance")).range(0..=250).build(&ui, &mut settings.trigger_distance);
-                        hover!("Максимальная дистанция, на которой будет работать триггер");
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
