@@ -31,7 +31,7 @@ impl Constructor for PROCESSENTRY32W {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Process {
     // Process id.
     pub id: u32,

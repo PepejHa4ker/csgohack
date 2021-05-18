@@ -48,19 +48,11 @@ pub fn init(title: &str) -> System {
     imgui.fonts().add_font(&[
         FontSource::DefaultFontData {
             config: Some(FontConfig {
-                size_pixels: font_size,
-                ..FontConfig::default()
-            }),
-        },
-        FontSource::TtfData {
-            data: include_bytes!("../../resources/Roboto-Regular.ttf"),
-            size_pixels: font_size,
-            config: Some(FontConfig {
                 rasterizer_multiply: 1.75,
                 glyph_ranges: FontGlyphRanges::cyrillic(),
                 ..FontConfig::default()
             }),
-        },
+        }
     ]);
 
     imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
