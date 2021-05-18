@@ -284,7 +284,37 @@ impl Config {
                     table: "m_vecVelocity[0]".to_string(),
                     prop: "DT_CSPlayer".to_string(),
                     offset: 0
-                }
+                },
+                Netvar {
+                    name: "m_bGunGameImmunity".to_string(),
+                    table: "DT_CSPlayer".to_string(),
+                    prop: "m_bGunGameImmunity".to_string(),
+                    offset: 0
+                },
+                Netvar {
+                    name: "m_iHealth".to_string(),
+                    table: "DT_BasePlayer".to_string(),
+                    prop: "m_iHealth".to_string(),
+                    offset: 0
+                },
+                Netvar {
+                    name: "m_iTeamNum".to_string(),
+                    table: "DT_BasePlayer".to_string(),
+                    prop: "m_iTeamNum".to_string(),
+                    offset: 0
+                },
+                Netvar {
+                    name: "m_fFlags".to_string(),
+                    table: "DT_CSPlayer".to_string(),
+                    prop: "m_fFlags".to_string(),
+                    offset: 0
+                },
+                Netvar {
+                    name: "m_iGlowIndex".to_string(),
+                    table: "DT_CSPlayer".to_string(),
+                    prop: "m_flFlashDuration".to_string(),
+                    offset: 24
+                },
             ],
         }
     }

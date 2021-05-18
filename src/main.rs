@@ -31,7 +31,6 @@ use winapi::um::winuser::{GetAsyncKeyState, VK_F8};
 
 mod entities;
 mod math;
-mod offsets;
 mod gui;
 mod mem;
 mod config;
@@ -352,10 +351,34 @@ impl<'a, T> RemotePtr<'a, T> {
             .read(self.address)
             .expect(format!("Ошибка при чтении указателя 0x{:16X}", self.address).as_str())
     }
-    pub unsafe fn write(&self, value: &T) {
+    pub unsafe fn write(&self, value: &T) -> bool {
         self.runtime
             .process
-            .write(self.address as u32, value);
+            .write(self.address as u32, value)
+    }
+
+    pub unsafe fn add_netvar(&self, netvar: &'static str) -> Self {
+        self.add(self.runtime.get_netvar(netvar))
+    }
+
+    pub unsafe fn add_signature(&self, signature: &'static str) -> Self {
+        self.add(self.runtime.get_signature(signature))
+    }
+
+    pub unsafe fn read_netvar<N>(&self, netvar: &'static str) -> N {
+        self.add_netvar(netvar).cast().read()
+    }
+
+    pub unsafe fn read_singature<S>(&self, signature: &'static str) -> S {
+        self.add_signature(signature).cast().read()
+    }
+
+    pub unsafe fn write_netvar<N>(&self, netvar: &'static str, value: &N) {
+        self.add_netvar(netvar).cast().write(value);
+    }
+
+    pub unsafe fn write_singature<S>(&self, signature: &'static str, value: &S) {
+        self.add_signature(signature).cast().write(value);
     }
 
     pub fn add(&self, offset: usize) -> Self {
