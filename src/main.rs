@@ -314,7 +314,7 @@ impl Runtime {
     }
 
     pub unsafe fn read_ptr<T>(&self, offset: usize, client: bool) -> Option<RemotePtr<T>> {
-        let address: usize = self.read_offset(offset, client).expect(&*format!("Ошибка при чтении указателя 0x{:X}", offset));
+        let address: usize = self.read_offset(offset, client).expect(&*format!("Failed to read pointer: 0x{:X}", offset));
         if address == 0 {
             None
         } else {
@@ -349,7 +349,7 @@ impl<'a, T> RemotePtr<'a, T> {
         self.runtime
             .process
             .read(self.address)
-            .expect(format!("Ошибка при чтении указателя 0x{:16X}", self.address).as_str())
+            .expect(format!("Failed to read pointer: 0x{:16X}", self.address).as_str())
     }
     pub unsafe fn write(&self, value: &T) -> bool {
         self.runtime
