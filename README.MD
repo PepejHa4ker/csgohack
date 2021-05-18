@@ -1,12 +1,10 @@
-<div align="center">
 <p>
     <img width="200" src="https://raw.githubusercontent.com/PepejHa4ker/csgohack/master/app.ico">
 </p>
-[Discord](https://discord.gg/yXSBQTXgtE)
-</div>
 
-CsgoHack is a free and open-source memory hacking application.
+# CsgoHack is a free and open-source memory hacking cheat.
 
+[Discord](https://disk.yandex.ru/d/gLTyMHZXFtGSOQ)
 
 ## Issues
 If you notice any bugs or missing features, you can let us know by opening an issue [here](https://github.com/PepejHa4kker/csgohack/issues) or [discord](https://discord.gg/NQxs6hpKC7).
