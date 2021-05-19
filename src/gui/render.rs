@@ -62,10 +62,15 @@ impl UI {
 
         thread::spawn(move || {
             let system = init("Csgo Hack");
-            let mut settings = settings.lock().unwrap();
+            let mut last_settings = Settings::new();
+            let mut actual_settings = Settings::new();
 
             system.main_loop(move |_, ui| {
-
+                if actual_settings != last_settings {
+                    last_settings = actual_settings;
+                    let mut settings = settings.lock().unwrap();
+                    *settings = last_settings;
+                }
                 macro_rules! window {
                             ($name:literal, ($width:literal, $height:literal) : $block:block) => {
                                 Window::new(im_str!($name)).size([$width, $height], Condition::FirstUseEver)
@@ -74,13 +79,6 @@ impl UI {
                             }
                         }
 
-                macro_rules! hover {
-                            ($text:literal) => {
-                             if ui.is_item_hovered() {
-                                 ui.tooltip_text($text);
-                                }
-                            };
-                        }
                 // macro_rules! menu {
                 //             ($text:literal, $block:block) => {
                 //                 ui.menu(im_str!($text), true, || $block);
@@ -113,19 +111,18 @@ impl UI {
                     if ui.button(im_str!("Load"), button_size) {
                         //TODO update config
                     }
-
                 }
             });
                 window!("Aimbot", (250.0, 250.0) : {
                             // window_title_color.pop(&ui);
-                            ui.checkbox(im_str!("Enabled"), &mut settings.aimbot_enabled);
-                            ui.checkbox(im_str!("Enable Recoil Control"), &mut settings.aimbot_rctl);
-                            Slider::new(im_str!("Angle")).range(1.0..=180.0).build(&ui, &mut settings.aimbot_angle);
-                            Slider::new(im_str!("Distance")).range(1..=250).build(&ui, &mut settings.aimbot_distance);
+                            ui.checkbox(im_str!("Enabled"), &mut actual_settings.aimbot_enabled);
+                            ui.checkbox(im_str!("Enable Recoil Control"), &mut actual_settings.aimbot_rctl);
+                            Slider::new(im_str!("Angle")).range(1.0..=180.0).build(&ui, &mut actual_settings.aimbot_angle);
+                            Slider::new(im_str!("Distance")).range(1..=250).build(&ui, &mut actual_settings.aimbot_distance);
                             ui.separator();
-                            ui.checkbox(im_str!("Aim assist"), &mut settings.aim_assist_enabled);
-                            Slider::new(im_str!("Radius")).range(1..=10).build(&ui, &mut settings.aim_assist_angle);
-                            let selected_name = match settings.aim_target {
+                            ui.checkbox(im_str!("Aim assist"), &mut actual_settings.aim_assist_enabled);
+                            Slider::new(im_str!("Radius")).range(1..=10).build(&ui, &mut actual_settings.aim_assist_angle);
+                            let selected_name = match actual_settings.aim_target {
                                 8 => "Head",
                                 5 => "Body",
                                 _ => "N/A"
@@ -133,11 +130,11 @@ impl UI {
                             };
 
                             ComboBox::new(im_str!("Bone")).preview_mode(ComboBoxPreviewMode::Full).preview_value(ImStr::from_cstr_unchecked(CString::new(selected_name).unwrap().as_c_str())).build(&ui, || {
-                                if Selectable::new(im_str!("Head")).selected(settings.aim_target == 8).build(&ui) {
-                                     settings.aim_target = 8;
+                                if Selectable::new(im_str!("Head")).selected(actual_settings.aim_target == 8).build(&ui) {
+                                     actual_settings.aim_target = 8;
                                 }
-                                if Selectable::new(im_str!("Body")).selected(settings.aim_target == 5).build(&ui) {
-                                      settings.aim_target = 5;
+                                if Selectable::new(im_str!("Body")).selected(actual_settings.aim_target == 5).build(&ui) {
+                                      actual_settings.aim_target = 5;
                                 }
 
 
@@ -149,16 +146,16 @@ impl UI {
 
                 window!("Misc", (250.0, 250.0) : {
                             // window_title_color.pop(&ui);
-                            ui.checkbox(im_str!("FOV"), &mut settings.fov_enabled);
+                            ui.checkbox(im_str!("FOV"), &mut actual_settings.fov_enabled);
                             ui.separator();
 
-                            Slider::new(im_str!("Fov Changer")).range(-180..=180).build(&ui, &mut settings.fov);
+                            Slider::new(im_str!("Fov Changer")).range(-180..=180).build(&ui, &mut actual_settings.fov);
 
-                            ui.checkbox(im_str!("Recoil Control"), &mut settings.recoil_enabled);
+                            ui.checkbox(im_str!("Recoil Control"), &mut actual_settings.recoil_enabled);
                             ui.separator();
-                            Slider::new(im_str!("Shot")).range(1..=100).build(&ui, &mut settings.recoil_shots);
+                            Slider::new(im_str!("Shot")).range(1..=100).build(&ui, &mut actual_settings.recoil_shots);
 
-                            ui.checkbox(im_str!("FastTap"), &mut settings.fast_tap_enabled);
+                            ui.checkbox(im_str!("FastTap"), &mut actual_settings.fast_tap_enabled);
                             ui.separator();
 
 
@@ -169,18 +166,18 @@ impl UI {
                 window!("Trigger bot", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
 
-                        ui.checkbox(im_str!("Enabled"), &mut settings.trigger_enabled);
-                        ui.checkbox(im_str!("Only scope"), &mut settings.trigger_only_in_scope);
+                        ui.checkbox(im_str!("Enabled"), &mut actual_settings.trigger_enabled);
+                        ui.checkbox(im_str!("Only scope"), &mut actual_settings.trigger_only_in_scope);
                         ui.separator();
-                        Slider::new(im_str!("Delay (ms)")).range(0..=1000).build(&ui, &mut settings.trigger_delay);
-                        Slider::new(im_str!("Max distance")).range(0..=250).build(&ui, &mut settings.trigger_distance);
+                        Slider::new(im_str!("Delay (ms)")).range(0..=1000).build(&ui, &mut actual_settings.trigger_delay);
+                        Slider::new(im_str!("Max distance")).range(0..=250).build(&ui, &mut actual_settings.trigger_distance);
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("WallHack", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
                         ui.columns(2, im_str!("###wh"), true);
-                        ColorEdit::new(im_str!("Enemy color"), EditableColor::Float4(&mut settings.wh_enemy_color))
+                        ColorEdit::new(im_str!("Enemy color"), EditableColor::Float4(&mut actual_settings.wh_enemy_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -188,7 +185,7 @@ impl UI {
                             .inputs(false)
                             .alpha(true)
                             .build(&ui);
-                        ColorEdit::new(im_str!("Teammate color"), EditableColor::Float4(&mut settings.wh_local_color))
+                        ColorEdit::new(im_str!("Teammate color"), EditableColor::Float4(&mut actual_settings.wh_local_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -196,7 +193,7 @@ impl UI {
                             .inputs(false)
                             .alpha(true)
                             .build(&ui);
-                        ColorEdit::new(im_str!("Immune color"), EditableColor::Float4(&mut settings.wh_inactive_color))
+                        ColorEdit::new(im_str!("Immune color"), EditableColor::Float4(&mut actual_settings.wh_inactive_color))
                             .tooltip(false)
                             .alpha_bar(false)
                             .display_mode(ColorEditDisplayMode::RGB)
@@ -205,20 +202,20 @@ impl UI {
                             .alpha(true)
                             .build(&ui);
                         ui.next_column();
-                        ui.checkbox(im_str!("Enabled"), &mut settings.wh_enabled);
-                        ui.checkbox(im_str!("Full bloom"), &mut settings.wh_full_bloom);
+                        ui.checkbox(im_str!("Enabled"), &mut actual_settings.wh_enabled);
+                        ui.checkbox(im_str!("Full bloom"), &mut actual_settings.wh_full_bloom);
 
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("Anti Flash", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
-                        ui.checkbox(im_str!("Enabled"), &mut settings.flash_enabled);
+                        ui.checkbox(im_str!("Enabled"), &mut actual_settings.flash_enabled);
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
                 window!("Bhop", (250.0, 250.0) : {
                         // window_title_color.pop(&ui);
-                        ui.checkbox(im_str!("Enabled"), &mut settings.bhop_enabled);
+                        ui.checkbox(im_str!("Enabled"), &mut actual_settings.bhop_enabled);
                         ui.separator();
                     });
                 // let window_title_color  = ui.push_style_color(StyleColor::Text, [1.0, 0.0, 0.8, 1.0]);
@@ -258,7 +255,6 @@ impl UI {
                 // check_mark_color.pop(&ui);
                 // text_color.pop(&ui);
                 sleep(Duration::from_millis(10));
-
             });
         });
     }

@@ -447,9 +447,8 @@ fn inject_cheat(process: Process, mut cheats: Vec<Box<dyn CheatModule>>, netvars
 
     unsafe {
         UI::start(&runtime);
-
+        let settings = Arc::clone(&runtime.settings);
         loop {
-            let settings = Arc::clone(&runtime.settings);
             let settings = settings.lock().unwrap();
             for cheat in &mut cheats {
                 cheat.handle(&mut runtime, &settings);

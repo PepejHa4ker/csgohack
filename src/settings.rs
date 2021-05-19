@@ -1,6 +1,6 @@
 use winapi::um::winuser::VK_LBUTTON;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Settings {
     pub aimbot_enabled: bool,
     pub aimbot_angle: f32,
