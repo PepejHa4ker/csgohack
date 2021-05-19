@@ -9,7 +9,6 @@ use cgmath::{
     MetricSpace,
     Vector2,
     Vector3,
-    num_traits::real::{Real},
     num_traits::Pow,
 };
 use itertools::Itertools;
@@ -30,10 +29,10 @@ impl CheatModule for AimAssist {
         if settings.aim_assist_enabled {
             while GetAsyncKeyState(settings.aim_assist_key) == 1 {
                 if player.is_alive() {
-                    let enemies = player.get_runtime().get_entities()
-                        .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
-                        .filter(|enemy| enemy.get_team() != player.get_team())
-                        .sorted_by_key(|enemy| fov(player.get_view_angles(), calculate_angle(&player, enemy.get_bone_position(settings.aim_target as usize).unwrap(), &settings), player.get_position().distance(enemy.get_position())) as i32)
+                    let enemies = player.get_runtime().get_enemies()
+                        .sorted_by_key(|enemy| fov(player.get_view_angles(),
+                                                   calculate_angle(&player, enemy.get_bone_position(settings.aim_target as usize).unwrap(), &settings),
+                                                   player.get_position().distance(enemy.get_position())) as i32)
                         .collect::<Vec<_>>();
                     if let Some(nearest_enemy) = enemies.get(0) {
                         if let Some(head_bone_pos) = nearest_enemy.get_bone_position(settings.aim_target as usize) {

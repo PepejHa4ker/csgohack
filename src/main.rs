@@ -281,38 +281,47 @@ impl Runtime {
 
 // pub fn get_map_name()
 
+    #[inline]
     pub fn get_signature(&self, signature: &'static str) -> usize {
         *self.signatures.get(signature).unwrap()
     }
 
+    #[inline]
     pub fn get_netvar(&self, netvar: &'static str) -> usize {
         self.get_netvar_safely(netvar).unwrap()
     }
 
+    #[inline]
     pub fn get_netvar_safely(&self, netvar: &'static str) -> Option<usize> {
         self.netvars.get(netvar).map(|a| *a)
     }
+
+    #[inline]
     pub unsafe fn get_entities(&self) -> impl Iterator<Item=EntityPlayer> {
         (0..64).map(move |i| EntityPlayer::get(self, i))
             .flatten()
     }
 
+    #[inline]
     pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
         self.get_entities()
             .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
             .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
     }
 
+    #[inline]
     pub unsafe fn write_client<T>(&self, value: &T) {
         self.process
             .write(self.client as u32, value);
     }
 
+    #[inline]
     pub unsafe fn write_engine<T>(&self, value: &T) {
         self.process
             .write(self.engine as u32, value);
     }
 
+    #[inline]
     pub unsafe fn read_ptr<T>(&self, offset: usize, client: bool) -> Option<RemotePtr<T>> {
         let address: usize = self.read_offset(offset, client).expect(&*format!("Failed to read pointer: 0x{:X}", offset));
         if address == 0 {
@@ -326,11 +335,14 @@ impl Runtime {
         }
     }
 
+    #[inline]
     pub unsafe fn read_offset<T>(&self, offset: usize, client: bool) -> Option<T> {
         let address = self.get_address(offset, client);
         self.process.read(address)
     }
 
+
+    #[inline]
     pub unsafe fn write_offset<T>(&self, offset: usize, value: &T, client: bool) {
         let address = self.get_address(offset, client);
         self.process.write(address as u32, value);
@@ -345,44 +357,53 @@ pub struct RemotePtr<'a, T> {
 }
 
 impl<'a, T> RemotePtr<'a, T> {
+
+    #[inline]
     pub unsafe fn read(&self) -> T {
         self.runtime
             .process
             .read(self.address)
             .expect(format!("Failed to read pointer: 0x{:16X}", self.address).as_str())
     }
+
+    #[inline]
     pub unsafe fn write(&self, value: &T) -> bool {
         self.runtime
             .process
             .write(self.address as u32, value)
     }
 
+    #[inline]
     pub unsafe fn add_netvar(&self, netvar: &'static str) -> Self {
         self.add(self.runtime.get_netvar(netvar))
     }
 
-
-
+    #[inline]
     pub unsafe fn add_signature(&self, signature: &'static str) -> Self {
         self.add(self.runtime.get_signature(signature))
     }
 
+    #[inline]
     pub unsafe fn read_netvar<N>(&self, netvar: &'static str) -> N {
         self.add_netvar(netvar).cast().read()
     }
 
+    #[inline]
     pub unsafe fn read_singature<S>(&self, signature: &'static str) -> S {
         self.add_signature(signature).cast().read()
     }
 
+    #[inline]
     pub unsafe fn write_netvar<N>(&self, netvar: &'static str, value: &N) {
         self.add_netvar(netvar).cast().write(value);
     }
 
+    #[inline]
     pub unsafe fn write_singature<S>(&self, signature: &'static str, value: &S) {
         self.add_signature(signature).cast().write(value);
     }
 
+    #[inline]
     pub fn add(&self, offset: usize) -> Self {
         Self {
             address: self.address + offset,
@@ -390,6 +411,7 @@ impl<'a, T> RemotePtr<'a, T> {
         }
     }
 
+    #[inline]
     pub fn cast<R>(&self) -> RemotePtr<R> {
         RemotePtr {
             address: self.address,

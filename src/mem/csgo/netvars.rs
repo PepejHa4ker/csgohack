@@ -11,7 +11,7 @@ pub struct NetvarManager {
 impl NetvarManager {
     pub fn new(first: usize, client_module: &Module) -> Option<Self> {
         debug!("First ClientClass at {:#X}", first);
-        let classes = ClientClassIterator::new(first + client_module.base, &module);
+        let classes = ClientClassIterator::new(first + client_module.base, &client_module);
         let tables = classes
             .map(|c| (c.table.name.clone(), c.table))
             .collect::<Map<_>>();
