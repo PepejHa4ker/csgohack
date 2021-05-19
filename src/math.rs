@@ -38,7 +38,7 @@ fn clamp(value: &mut f32, low: f32, high: f32) -> f32 {
 pub unsafe fn calculate_angle(source: &LocalPlayer, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
     if let Some(source_bone_pos) = source.get_head_bone_position() {
         let punch_angle: Vector2<f32> = source.get_punch_angles() * 2.0;
-        let diff: Vector3<f32> = dist - source_bone_pos;
+        let diff: Vector3<f32> = dist - (source_bone_pos + source.get_view_offset());
         let delta_length = (diff.x * diff.x + diff.y * diff.y).sqrt();
         let mut pitch = -diff.z.atan2(delta_length).to_degrees();
         let mut yaw = diff.y.atan2(diff.x).to_degrees();

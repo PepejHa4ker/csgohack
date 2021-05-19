@@ -62,11 +62,11 @@ pub unsafe trait Player<'a> {
         self.get_base_ptr().read_netvar("m_bIsScoped")
     }
 
-    unsafe fn get_glow_object(&self) -> usize {
+    unsafe fn get_glow_object(&self) -> RemotePtr<'a, usize> {
         self.get_runtime()
-            .read_ptr(self.get_runtime().get_signature("dwGlowObjectManager"), true)
+            .read_ptr::<usize>(self.get_runtime().get_signature("dwGlowObjectManager"), true)
             .unwrap()
-            .read()
+
     }
 
     unsafe fn is_immune(&self) -> bool {
@@ -99,8 +99,8 @@ pub unsafe trait Player<'a> {
         runtime.read_ptr::<usize>(runtime.get_signature("dwClientState"), false).unwrap().add(runtime.get_signature("dwClientState_ViewAngles")).cast().read()
     }
 
-    unsafe fn get_view_offset(&self) -> usize {
-        self.get_base_ptr() .read_netvar("m_vecViewOffset")
+    unsafe fn get_view_offset(&self) -> Vector3<f32> {
+        self.get_base_ptr().read_netvar("m_vecViewOffset")
     }
 
     unsafe fn get_shots_fired(&self) -> i32 {

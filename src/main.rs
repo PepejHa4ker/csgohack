@@ -28,6 +28,7 @@ use crate::gui::render::UI;
 
 use std::thread;
 use winapi::um::winuser::{GetAsyncKeyState, VK_F8};
+use std::ffi::c_void;
 
 mod entities;
 mod math;
@@ -59,7 +60,6 @@ impl Runtime {
             self.engine + offset
         }
     }
-
 
     pub unsafe fn get_local_player(&self) -> Option<LocalPlayer> {
         LocalPlayer::new(self)
@@ -303,6 +303,11 @@ impl Runtime {
             .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
     }
 
+    pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
+        self.get_entities()
+            .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
+    }
+
     pub unsafe fn write_client<T>(&self, value: &T) {
         self.process
             .write(self.client as u32, value);
@@ -361,6 +366,8 @@ impl<'a, T> RemotePtr<'a, T> {
         self.add(self.runtime.get_netvar(netvar))
     }
 
+
+
     pub unsafe fn add_signature(&self, signature: &'static str) -> Self {
         self.add(self.runtime.get_signature(signature))
     }
@@ -398,7 +405,7 @@ impl<'a, T> RemotePtr<'a, T> {
 }
 
 pub trait CheatModule {
-    unsafe fn handle(&mut self, runtime: &mut Runtime, settings: &Settings);
+    unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings);
 }
 
 fn main() {
@@ -449,9 +456,12 @@ fn inject_cheat(process: Process, mut cheats: Vec<Box<dyn CheatModule>>, netvars
         UI::start(&runtime);
         let settings = Arc::clone(&runtime.settings);
         loop {
-            let settings = settings.lock().unwrap();
-            for cheat in &mut cheats {
-                cheat.handle(&mut runtime, &settings);
+            if let Some(player) = runtime.get_local_player() {
+                let settings = settings.lock().unwrap();
+                for cheat in &mut cheats {
+                    cheat.handle(&player, &settings);
+                }
+                drop(settings);
             }
             sleep(Duration::from_millis(1));
         }
