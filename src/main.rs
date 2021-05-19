@@ -10,14 +10,13 @@ pub use ::imgui::*;
 use winapi::_core::marker::PhantomData;
 
 
-use crate::mem::Process;
+use crate::mem::{Process, Module};
 
 use std::thread::sleep;
 use std::time::Duration;
 use crate::config::Config;
 use std::process::exit;
 use std::collections::BTreeMap;
-
 use crate::entities::{LocalPlayer, Player, EntityPlayer};
 use crate::cheats::*;
 use std::fmt::Debug;
@@ -25,10 +24,6 @@ use crate::settings::Settings;
 use winapi::um::wincon::FreeConsole;
 use std::sync::{Arc, Mutex};
 use crate::gui::render::UI;
-
-use std::thread;
-use winapi::um::winuser::{GetAsyncKeyState, VK_F8};
-use std::ffi::c_void;
 
 mod entities;
 mod math;
@@ -300,11 +295,11 @@ impl Runtime {
     pub unsafe fn get_entities(&self) -> impl Iterator<Item=EntityPlayer> {
         (0..64).map(move |i| EntityPlayer::get(self, i))
             .flatten()
-            .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
     }
 
     pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
         self.get_entities()
+            .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
             .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
     }
 
@@ -413,17 +408,7 @@ fn main() {
         FreeConsole();
     }
 
-    let config = Config::load();
-    let process = mem::from_name(&config.executable)
-        .ok_or_else(|| {
-            error!("Could not open process {}!", config.executable);
-            exit(1);
-        })
-        .unwrap();
 
-
-    let sigs = scan_signatures(&config, &process);
-    let netvars = scan_netvars(&sigs, &config, &process).unwrap();
     let mut cheats = Vec::<Box<dyn CheatModule>>::new();
     cheats.push(Box::new(WallHack::new()));
     cheats.push(Box::new(BHop::new()));
@@ -434,20 +419,33 @@ fn main() {
     cheats.push(Box::new(Recoil::new()));
     cheats.push(Box::new(FastTap::new()));
     cheats.push(Box::new(AntiFlash::new()));
-    inject_cheat(process, cheats, netvars, sigs);
+    inject_cheats(cheats);
 }
 
 
-fn inject_cheat(process: Process, mut cheats: Vec<Box<dyn CheatModule>>, netvars: Map<usize>, signatures: Map<usize>) {
-    let client = process.get_module("client.dll").unwrap().as_ref().base;
-    let engine = process.get_module("engine.dll").unwrap().as_ref().base;
+fn inject_cheats(mut cheats: Vec<Box<dyn CheatModule>>) {
+    let config = Config::load();
+    let process = mem::from_name(&config.executable)
+        .ok_or_else(|| {
+            error!("Could not open process {}!", config.executable);
+            exit(1);
+        })
+        .unwrap();
+
+
+    let client = process.get_module("client.dll")
+        .or_else(||process.get_module("client_panorama.dll"))
+        .unwrap();
+    let engine = process.get_module("engine.dll").unwrap().base;
+    let sigs = scan_signatures(&config, &process);
+    let netvars = scan_netvars(&sigs, &config, &client).unwrap();
     let settings = Arc::new(Mutex::new(Settings::new()));
     let mut runtime = Runtime {
         process,
-        client,
+        client: client.base,
         engine,
         netvars,
-        signatures,
+        signatures: sigs,
         settings,
     };
 
@@ -506,11 +504,11 @@ fn scan_signatures(conf: &Config, process: &Process) -> Map<usize> {
 }
 
 /// Scan the netvars from the config and return a `Option<Map<i32>>`.
-fn scan_netvars(sigs: &Map<usize>, conf: &Config, process: &Process) -> Option<Map<usize>> {
+fn scan_netvars(sigs: &Map<usize>, conf: &Config, client_module: &Module) -> Option<Map<usize>> {
     debug!("Starting netvar scanning: {} items", conf.netvars.len());
 
     let first = sigs.get("dwGetAllClasses")?;
-    let netvars = mem::csgo::NetvarManager::new(*first, process)?;
+    let netvars = mem::csgo::NetvarManager::new(*first, client_module)?;
 
     let mut res = BTreeMap::new();
     for netvar in &conf.netvars {

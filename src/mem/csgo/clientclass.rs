@@ -39,6 +39,7 @@ impl ClientClass {
         )
     );
 
+
     fn parse(base: usize, module: &Module) -> Option<(ClientClass, usize)> {
         debug!("Starting to parse ClientClass at {:#x}", base);
         let data = module.get_slice(base, 0x18, false)?;
