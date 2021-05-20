@@ -259,35 +259,19 @@ pub enum EnemySelectingStrategy {
     Index,
 }
 
+impl std::fmt::Display for EnemySelectingStrategy {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 impl EnemySelectingStrategy {
+
     pub fn iter() -> Iter<'static, EnemySelectingStrategy> {
         static STRATEGIES: [EnemySelectingStrategy; 5] = [Health, Distance, DistanceFlatten, Angle, Index];
         STRATEGIES.iter()
     }
-
-    pub fn get_name(&self) -> &'static str {
-        match self {
-            Health => {
-                "Heath"
-            }
-            Distance => {
-                "Distance"
-            }
-            DistanceFlatten => {
-                "Distance Flatten"
-            }
-            Angle => {
-                "Angle"
-            }
-            Index => {
-                "Index"
-            }
-        }
-    }
 }
-
-
 
 pub unsafe fn get_enemies_by_strategy<'a>(runtime: &'a Runtime, settings: &Settings) -> impl Iterator<Item=EntityPlayer<'a>> {
     let player = runtime.get_local_player().expect("Failed to get LocalPlayer");
