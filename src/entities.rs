@@ -6,7 +6,7 @@ use std::time::Duration;
 use itertools::Itertools;
 use crate::settings::Settings;
 use crate::entities::EnemySelectingStrategy::*;
-use crate::util::math::{fov, calculate_angle};
+use crate::util::math::{fov, calculate_angle, truncate_y_vector};
 use std::slice::Iter;
 
 
@@ -55,7 +55,7 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_distance_flatten(&self, other: &dyn Player) -> f32 {
-        (self.get_position() - other.get_position()).truncate().magnitude()
+       truncate_y_vector(self.get_position() - other.get_position()).magnitude()
     }
 
     #[inline]
@@ -170,6 +170,7 @@ pub struct EntityPlayer<'a> {
 }
 
 unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
+
     fn get_base_ptr(&self) -> RemotePtr<'a, usize> {
         self.inner.clone()
     }
@@ -251,31 +252,35 @@ impl<'a> LocalPlayer<'a> {
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum EnemySelectingStrategy {
-    HEALTH,
-    DISTANCE,
-    ANGLE,
-    INDEX,
+    Health,
+    Distance,
+    DistanceFlatten,
+    Angle,
+    Index,
 }
 
 
 impl EnemySelectingStrategy {
     pub fn iter() -> Iter<'static, EnemySelectingStrategy> {
-        static STRATEGIES: [EnemySelectingStrategy; 4] = [HEALTH, DISTANCE, ANGLE, INDEX];
+        static STRATEGIES: [EnemySelectingStrategy; 5] = [Health, Distance, DistanceFlatten, Angle, Index];
         STRATEGIES.iter()
     }
 
     pub fn get_name(&self) -> &'static str {
         match self {
-            EnemySelectingStrategy::HEALTH => {
+            Health => {
                 "Heath"
             }
-            EnemySelectingStrategy::DISTANCE => {
+            Distance => {
                 "Distance"
             }
-            EnemySelectingStrategy::ANGLE => {
+            DistanceFlatten => {
+                "Distance Flatten"
+            }
+            Angle => {
                 "Angle"
             }
-            EnemySelectingStrategy::INDEX => {
+            Index => {
                 "Index"
             }
         }
@@ -289,18 +294,21 @@ pub unsafe fn get_enemies_by_strategy<'a>(runtime: &'a Runtime, settings: &Setti
     runtime.get_enemies().
         sorted_by_key(move |enemy| {
             match settings.enemy_selecting_strategy {
-                EnemySelectingStrategy::HEALTH => {
+                Health => {
                     enemy.get_health()
                 }
-                EnemySelectingStrategy::DISTANCE => {
+                Distance => {
                     enemy.get_position().distance(player.get_position()) as _
                 }
-                EnemySelectingStrategy::ANGLE => {
+                DistanceFlatten => {
+                    enemy.get_distance_flatten(&player) as _
+                }
+                Angle => {
                     fov(player.get_view_angles(),
                         calculate_angle(&player, enemy.get_bone_position(settings.aim_target as usize).unwrap(), &settings),
                         player.get_position().distance(enemy.get_position()) as _) as _
                 }
-                EnemySelectingStrategy::INDEX => {
+                Index => {
                     enemy.get_index() as _
                 }
             }

@@ -1,5 +1,6 @@
 use winapi::um::winuser::VK_LBUTTON;
 use crate::entities::EnemySelectingStrategy;
+use crate::entities::EnemySelectingStrategy::DistanceFlatten;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Settings {
@@ -36,7 +37,7 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Self {
         Settings {
-            enemy_selecting_strategy: EnemySelectingStrategy::DISTANCE,
+            enemy_selecting_strategy: DistanceFlatten,
             aimbot_enabled: false,
             aimbot_angle: 180.0,
             aimbot_rctl: false,

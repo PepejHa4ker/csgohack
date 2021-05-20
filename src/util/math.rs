@@ -41,6 +41,13 @@ pub fn fov(view_angle: Vector2<f32>, dest: Vector2<f32>, dist: f32) -> f32 {
 }
 
 
+pub fn truncate_y_vector<S>(vector: Vector3<S>) -> Vector2<S> {
+    Vector2::new(vector.x, vector.z)
+}
+
+
+
+
 pub unsafe fn calculate_angle(source: &LocalPlayer, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
     if let Some(source_bone_pos) = source.get_head_bone_position() {
         let punch_angle: Vector2<f32> = source.get_punch_angles() * 2.0;
