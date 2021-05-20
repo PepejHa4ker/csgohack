@@ -11,7 +11,38 @@ use std::slice::Iter;
 
 
 pub unsafe trait Player<'a> {
+
     fn get_base_ptr(&self) -> RemotePtr<'a, usize>;
+
+    #[inline]
+    unsafe fn add_netvar(&self, netvar: &'static str) -> RemotePtr<'a, usize> {
+        self.get_base_ptr().add(self.get_runtime().get_netvar(netvar))
+    }
+
+    #[inline]
+    unsafe fn add_signature(&self, signature: &'static str) -> RemotePtr<'a, usize> {
+        self.get_base_ptr().add(self.get_runtime().get_signature(signature))
+    }
+
+    #[inline]
+    unsafe fn read_netvar<N>(&self, netvar: &'static str) -> N {
+        self.add_netvar(netvar).cast().read()
+    }
+
+    #[inline]
+    unsafe fn read_singature<S>(&self, signature: &'static str) -> S {
+        self.add_signature(signature).cast().read()
+    }
+
+    #[inline]
+    unsafe fn write_netvar<N>(&self, netvar: &'static str, value: &N) {
+        self.add_netvar(netvar).cast().write(value);
+    }
+
+    #[inline]
+    unsafe fn write_singature<S>(&self, signature: &'static str, value: &S) {
+        self.add_signature(signature).cast().write(value);
+    }
 
     #[inline]
     unsafe fn get_head_bone_position(&self) -> Option<Vector3<f32>> {
@@ -34,12 +65,12 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_health(&self) -> usize {
-        self.get_base_ptr().read_netvar("m_iHealth")
+        self.read_netvar("m_iHealth")
     }
 
     #[inline]
     unsafe fn get_team(&self) -> usize {
-        self.get_base_ptr().read_netvar("m_iTeamNum")
+        self.read_netvar("m_iTeamNum")
     }
 
     #[inline]
@@ -50,12 +81,12 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_position(&self) -> Vector3<f32> {
-        self.get_base_ptr().read_netvar("m_vecOrigin")
+        self.read_netvar("m_vecOrigin")
     }
 
     #[inline]
-    unsafe fn get_distance_flatten(&self, other: &dyn Player) -> f32 {
-       truncate_y_vector(self.get_position() - other.get_position()).magnitude()
+    unsafe fn get_distance_flatten(&self, lp: &LocalPlayer) -> f32 {
+       truncate_y_vector(self.get_position() - lp.get_position()).magnitude()
     }
 
     #[inline]
@@ -65,17 +96,17 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_glow_index(&self) -> i32 {
-        self.get_base_ptr().read_netvar("m_iGlowIndex")
+        self.read_netvar("m_iGlowIndex")
     }
 
     #[inline]
     unsafe fn get_flags(&self) -> usize {
-        self.get_base_ptr().read_netvar("m_fFlags")
+        self.read_netvar("m_fFlags")
     }
 
     #[inline]
     unsafe fn is_scoped(&self) -> bool {
-        self.get_base_ptr().read_netvar("m_bIsScoped")
+        self.read_netvar("m_bIsScoped")
     }
 
     #[inline]
@@ -87,17 +118,17 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn is_immune(&self) -> bool {
-        self.get_base_ptr().read_netvar("m_bGunGameImmunity")
+        self.read_netvar("m_bGunGameImmunity")
     }
 
     #[inline]
     unsafe fn get_fov(&self) -> i32 {
-        self.get_base_ptr().read_netvar("m_iFOV")
+        self.read_netvar("m_iFOV")
     }
 
     #[inline]
     unsafe fn get_crosshair_id(&self) -> Option<usize> {
-        let temp: usize = self.get_base_ptr().read_netvar("m_iCrosshairId");
+        let temp: usize = self.read_netvar("m_iCrosshairId");
         if temp <= 0 || temp > 32 {
             None
         } else {
@@ -107,12 +138,12 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn is_spotted(&self) -> bool {
-        self.get_base_ptr().read_netvar("m_bSpotted")
+        self.read_netvar("m_bSpotted")
     }
 
     #[inline]
     unsafe fn set_spotted(&self, value: bool) {
-        self.get_base_ptr().write_netvar("m_bSpotted", &value)
+        self.write_netvar("m_bSpotted", &value)
     }
 
     #[inline]
@@ -123,12 +154,12 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_view_offset(&self) -> Vector3<f32> {
-        self.get_base_ptr().read_netvar("m_vecViewOffset")
+        self.read_netvar("m_vecViewOffset")
     }
 
     #[inline]
     unsafe fn get_shots_fired(&self) -> i32 {
-        self.get_base_ptr().read_netvar("m_iShotsFired")
+        self.read_netvar("m_iShotsFired")
     }
 
     #[inline]
@@ -138,13 +169,13 @@ pub unsafe trait Player<'a> {
 
     #[inline]
     unsafe fn get_flash_duration(&self) -> f32 {
-        self.get_base_ptr().read_netvar("m_flFlashDuration")
+        self.read_netvar("m_flFlashDuration")
     }
 
     #[inline]
     unsafe fn is_sniper_weapon_in_hand(&self) -> bool {
         let runtime = self.get_runtime();
-        let init_wep: i32 = self.get_base_ptr().read_netvar("m_hActiveWeapon");
+        let init_wep: i32 = self.read_netvar("m_hActiveWeapon");
         if let Some(weapon_entity) = runtime.read_offset::<i32>(runtime.get_signature("dwEntityList") + (((init_wep & 0xFFF) - 1) * 0x10) as usize, true) {
             if let Some(idx) = runtime.get_netvar_safely("m_iItemDefinitionIndex") {
                 if let Some(my_weapon) = runtime.process.read::<i32>((weapon_entity as usize) + idx) {
@@ -211,7 +242,7 @@ impl<'a> LocalPlayer<'a> {
 
     #[inline]
     pub unsafe fn set_fov(&self, fov: i32) {
-        self.get_base_ptr().write_netvar("m_iFOV", &fov);
+        self.write_netvar("m_iFOV", &fov);
     }
 
     #[inline]
@@ -230,12 +261,12 @@ impl<'a> LocalPlayer<'a> {
 
     #[inline]
     pub unsafe fn set_flash_duration(&self, duration: f32) {
-        self.get_base_ptr().write_netvar("m_flFlashDuration", &duration);
+        self.write_netvar("m_flFlashDuration", &duration);
     }
 
     #[inline]
     pub unsafe fn set_velocity(&self, velocity: Vector3<f32>) {
-        self.get_base_ptr().write_netvar("m_vecVelocity", &velocity)
+        self.write_netvar("m_vecVelocity", &velocity)
     }
 
     #[inline]
@@ -246,7 +277,7 @@ impl<'a> LocalPlayer<'a> {
 
     #[inline]
     pub unsafe fn get_punch_angles(&self) -> Vector2<f32> {
-        self.get_base_ptr().read_netvar("m_aimPunchAngle")
+        self.read_netvar("m_aimPunchAngle")
     }
 }
 

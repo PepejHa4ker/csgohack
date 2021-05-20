@@ -372,36 +372,6 @@ impl<'a, T> RemotePtr<'a, T> {
     }
 
     #[inline]
-    pub unsafe fn add_netvar(&self, netvar: &'static str) -> Self {
-        self.add(self.runtime.get_netvar(netvar))
-    }
-
-    #[inline]
-    pub unsafe fn add_signature(&self, signature: &'static str) -> Self {
-        self.add(self.runtime.get_signature(signature))
-    }
-
-    #[inline]
-    pub unsafe fn read_netvar<N>(&self, netvar: &'static str) -> N {
-        self.add_netvar(netvar).cast().read()
-    }
-
-    #[inline]
-    pub unsafe fn read_singature<S>(&self, signature: &'static str) -> S {
-        self.add_signature(signature).cast().read()
-    }
-
-    #[inline]
-    pub unsafe fn write_netvar<N>(&self, netvar: &'static str, value: &N) {
-        self.add_netvar(netvar).cast().write(value);
-    }
-
-    #[inline]
-    pub unsafe fn write_singature<S>(&self, signature: &'static str, value: &S) {
-        self.add_signature(signature).cast().write(value);
-    }
-
-    #[inline]
     pub fn add(&self, offset: usize) -> Self {
         Self {
             address: self.address + offset,
