@@ -4,6 +4,7 @@ use nom::*;
 
 use crate::mem::Module;
 use crate::mem::csgo::RecvTable;
+use crate::util::helpers::parse_string;
 
 
 #[derive(Debug, PartialEq)]
@@ -46,7 +47,7 @@ impl ClientClass {
         let (_, (offset_name, offset_table, offset_next, id)) =
             ClientClass::parse_raw(&data).ok()?;
 
-        let name = crate::helpers::parse_string(module.get(offset_name, false)?)
+        let name = parse_string(module.get(offset_name, false)?)
             .ok()?
             .1
             .to_string();

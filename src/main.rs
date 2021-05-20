@@ -25,15 +25,14 @@ use winapi::um::wincon::FreeConsole;
 use std::sync::{Arc, Mutex};
 use crate::gui::render::UI;
 
-mod entities;
-mod math;
-mod gui;
-mod mem;
-mod config;
-mod sigscan;
-mod helpers;
-mod cheats;
-mod settings;
+pub mod entities;
+pub mod gui;
+pub mod mem;
+pub mod config;
+pub mod sigscan;
+pub mod cheats;
+pub mod settings;
+pub mod util;
 
 type Map<T> = BTreeMap<String, T>;
 
@@ -298,14 +297,13 @@ impl Runtime {
 
     #[inline]
     pub unsafe fn get_entities(&self) -> impl Iterator<Item=EntityPlayer> {
-        (0..64).map(move |i| EntityPlayer::get(self, i))
+        (0..16).map(move |i| EntityPlayer::get(self, i))
             .flatten()
     }
 
     #[inline]
     pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
         self.get_entities()
-            .filter(|enemy| enemy.is_alive() && !enemy.is_immune())
             .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
     }
 

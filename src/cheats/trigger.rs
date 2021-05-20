@@ -1,6 +1,5 @@
 use crate::entities::{Player, EntityPlayer, LocalPlayer};
-use crate::{CheatModule, Inverse, Runtime};
-
+use crate::{CheatModule};
 use crate::cheat;
 use std::time::Instant;
 use std::time::Duration;

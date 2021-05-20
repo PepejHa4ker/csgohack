@@ -34,6 +34,12 @@ fn clamp(value: &mut f32, low: f32, high: f32) -> f32 {
     }
 }
 
+pub fn fov(view_angle: Vector2<f32>, dest: Vector2<f32>, dist: f32) -> f32 {
+    let pitch = (view_angle.x - dest.x).to_radians().sin() * dist;
+    let yaw = (view_angle.y - dest.y).to_radians().sin() * dist;
+    (pitch.powf(2.0) + yaw.powf(2.0)).sqrt()
+}
+
 
 pub unsafe fn calculate_angle(source: &LocalPlayer, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
     if let Some(source_bone_pos) = source.get_head_bone_position() {

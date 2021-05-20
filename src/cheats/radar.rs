@@ -1,5 +1,4 @@
 pub use crate::{CheatModule, Inverse, Runtime};
-use winapi::um::winuser::VK_F11;
 use crate::cheat;
 use crate::settings::Settings;
 use crate::entities::{Player, LocalPlayer};

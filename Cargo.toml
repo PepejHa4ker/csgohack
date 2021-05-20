@@ -31,7 +31,6 @@ imgui-gfx-renderer = "*"
 imgui-winit-support = "*"
 old_school_gfx_glutin_ext = "0.26"
 
-
 chrono = { version = "0.4.10", features = ["serde"] }
 arrayvec = "0.4"
 bitflags = "1.0"

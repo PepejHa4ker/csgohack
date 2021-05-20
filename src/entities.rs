@@ -1,8 +1,13 @@
 use crate::{RemotePtr, Runtime};
-use cgmath::{Vector3, Vector2, InnerSpace};
-use std::ffi::{CStr, OsStr};
+use cgmath::{Vector3, Vector2, InnerSpace, MetricSpace};
+
 use std::thread::sleep;
 use std::time::Duration;
+use itertools::Itertools;
+use crate::settings::Settings;
+use crate::entities::EnemySelectingStrategy::*;
+use crate::util::math::{fov, calculate_angle};
+use std::slice::Iter;
 
 
 pub unsafe trait Player<'a> {
@@ -78,7 +83,6 @@ pub unsafe trait Player<'a> {
         self.get_runtime()
             .read_ptr::<usize>(self.get_runtime().get_signature("dwGlowObjectManager"), true)
             .unwrap()
-
     }
 
     #[inline]
@@ -140,7 +144,7 @@ pub unsafe trait Player<'a> {
     #[inline]
     unsafe fn is_sniper_weapon_in_hand(&self) -> bool {
         let runtime = self.get_runtime();
-        let init_wep: i32  = self.get_base_ptr().read_netvar("m_hActiveWeapon");
+        let init_wep: i32 = self.get_base_ptr().read_netvar("m_hActiveWeapon");
         if let Some(weapon_entity) = runtime.read_offset::<i32>(runtime.get_signature("dwEntityList") + (((init_wep & 0xFFF) - 1) * 0x10) as usize, true) {
             if let Some(idx) = runtime.get_netvar_safely("m_iItemDefinitionIndex") {
                 if let Some(my_weapon) = runtime.process.read::<i32>((weapon_entity as usize) + idx) {
@@ -166,7 +170,6 @@ pub struct EntityPlayer<'a> {
 }
 
 unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
-
     fn get_base_ptr(&self) -> RemotePtr<'a, usize> {
         self.inner.clone()
     }
@@ -177,7 +180,6 @@ unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
 }
 
 impl<'a> EntityPlayer<'a> {
-
     pub unsafe fn get(runtime: &'a Runtime, index: usize) -> Option<EntityPlayer<'a>> {
         let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index * 0x10), true)?;
         Some(EntityPlayer {
@@ -185,11 +187,9 @@ impl<'a> EntityPlayer<'a> {
             inner,
         })
     }
-
 }
 
 unsafe impl<'a> Player<'a> for LocalPlayer<'a> {
-
     fn get_base_ptr(&self) -> RemotePtr<'a, usize> {
         self.inner.clone()
     }
@@ -200,7 +200,6 @@ unsafe impl<'a> Player<'a> for LocalPlayer<'a> {
 }
 
 impl<'a> LocalPlayer<'a> {
-
     pub unsafe fn new(runtime: &'a Runtime) -> Option<Self> {
         let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwLocalPlayer"), true)?;
         Some(LocalPlayer {
@@ -208,7 +207,6 @@ impl<'a> LocalPlayer<'a> {
             inner,
         })
     }
-
 
     #[inline]
     pub unsafe fn set_fov(&self, fov: i32) {
@@ -250,4 +248,66 @@ impl<'a> LocalPlayer<'a> {
         self.get_base_ptr().read_netvar("m_aimPunchAngle")
     }
 }
+
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum EnemySelectingStrategy {
+    HEALTH,
+    DISTANCE,
+    ANGLE,
+    INDEX,
+}
+
+
+impl EnemySelectingStrategy {
+    pub fn iter() -> Iter<'static, EnemySelectingStrategy> {
+        static STRATEGIES: [EnemySelectingStrategy; 4] = [HEALTH, DISTANCE, ANGLE, INDEX];
+        STRATEGIES.iter()
+    }
+
+    pub fn get_name(&self) -> &'static str {
+        match self {
+            EnemySelectingStrategy::HEALTH => {
+                "Heath"
+            }
+            EnemySelectingStrategy::DISTANCE => {
+                "Distance"
+            }
+            EnemySelectingStrategy::ANGLE => {
+                "Angle"
+            }
+            EnemySelectingStrategy::INDEX => {
+                "Index"
+            }
+        }
+    }
+}
+
+
+
+pub unsafe fn get_enemies_by_strategy<'a>(runtime: &'a Runtime, settings: &Settings) -> impl Iterator<Item=EntityPlayer<'a>> {
+    let player = runtime.get_local_player().expect("Failed to get LocalPlayer");
+    runtime.get_enemies().
+        sorted_by_key(move |enemy| {
+            match settings.enemy_selecting_strategy {
+                EnemySelectingStrategy::HEALTH => {
+                    enemy.get_health()
+                }
+                EnemySelectingStrategy::DISTANCE => {
+                    enemy.get_position().distance(player.get_position()) as _
+                }
+                EnemySelectingStrategy::ANGLE => {
+                    fov(player.get_view_angles(),
+                        calculate_angle(&player, enemy.get_bone_position(settings.aim_target as usize).unwrap(), &settings),
+                        player.get_position().distance(enemy.get_position()) as _) as _
+                }
+                EnemySelectingStrategy::INDEX => {
+                    enemy.get_index() as _
+                }
+            }
+        })
+}
+
+
+
+
 

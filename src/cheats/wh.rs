@@ -1,6 +1,5 @@
-use crate::{CheatModule, Runtime, Inverse};
+use crate::{CheatModule};
 use cgmath::{Vector4};
-use winapi::um::winuser::*;
 use crate::cheat;
 use crate::settings::Settings;
 use crate::entities::{Player, LocalPlayer};

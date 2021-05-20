@@ -3,6 +3,7 @@ use nom::le_u32;
 
 use crate::mem::csgo::prop::{RecvProp, RecvPropIterator};
 use crate::mem::Module;
+use crate::util::helpers::parse_string;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RecvTable {
@@ -37,7 +38,7 @@ impl RecvTable {
         let data = module.get_slice(base, 0x10, false)?;
         let (_, (offset_name, offset_props, num_props)) = Self::parse_raw(&data).ok()?;
 
-        let name = crate::helpers::parse_string(module.get(offset_name, false)?)
+        let name = parse_string(module.get(offset_name, false)?)
             .ok()?
             .1
             .to_string();

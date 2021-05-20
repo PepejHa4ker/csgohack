@@ -1,10 +1,10 @@
-use crate::{CheatModule, Runtime};
+use crate::{CheatModule};
 
-use winapi::um::winuser::{GetAsyncKeyState, VK_SPACE};
+use winapi::um::winuser::{GetAsyncKeyState};
 use crate::cheat;
 use crate::settings::Settings;
-use crate::entities::{Player, LocalPlayer};
-use std::time::{Instant, Duration};
+use crate::entities::{LocalPlayer};
+use std::time::{Instant};
 
 cheat!(FastTap {
     next_attack: Instant = Instant::now()

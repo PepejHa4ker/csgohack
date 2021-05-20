@@ -4,6 +4,7 @@ use nom::le_i32;
 
 use crate::mem::Module;
 use crate::mem::csgo::RecvTable;
+use crate::util::helpers::parse_string;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RecvProp {
@@ -43,7 +44,7 @@ impl RecvProp {
         let data = module.get_slice(base, 0x30, false)?;
         let (_, (offset_name, offset_table, value)) = RecvProp::parse_raw(&data).ok()?;
 
-        let name = crate::helpers::parse_string(module.get(offset_name, false)?)
+        let name = parse_string(module.get(offset_name, false)?)
             .ok()?
             .1
             .to_string();

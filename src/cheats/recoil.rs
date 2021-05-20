@@ -1,7 +1,5 @@
-use crate::{CheatModule, Inverse, Runtime};
-use winapi::um::winuser::VK_F10;
-use cgmath::{Vector2, Vector3};
-use crate::math::Normalizable;
+use crate::{CheatModule};
+use cgmath::{Vector2, InnerSpace};
 use crate::cheat;
 use crate::settings::Settings;
 use crate::entities::{Player, LocalPlayer};
