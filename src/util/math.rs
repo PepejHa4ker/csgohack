@@ -13,11 +13,11 @@ pub struct Matrix3x4 {
     pub z: Vector4<f32>,
 }
 
-pub trait Normalizable {
+pub trait Normalize {
     fn normalize(&mut self) -> &Self;
 }
 
-impl Normalizable for Vector2<f32> {
+impl Normalize for Vector2<f32> {
     fn normalize(&mut self) -> &Vector2<f32> {
         clamp(&mut self.y, -180.0, 180.0);
         clamp(&mut self.x, -89.0, 89.0);
@@ -25,7 +25,7 @@ impl Normalizable for Vector2<f32> {
     }
 }
 
-
+/// Clamps the value
 fn clamp(value: &mut f32, low: f32, high: f32) -> f32 {
     if *value < low {
         low
@@ -33,22 +33,20 @@ fn clamp(value: &mut f32, low: f32, high: f32) -> f32 {
         value.min(high)
     }
 }
-
+/// Calculate Field Of View by given angles
 pub fn fov(view_angle: Vector2<f32>, dest: Vector2<f32>, dist: f32) -> f32 {
     let pitch = (view_angle.x - dest.x).to_radians().sin() * dist;
     let yaw = (view_angle.y - dest.y).to_radians().sin() * dist;
     (pitch.powf(2.0) + yaw.powf(2.0)).sqrt()
 }
 
-
+/// Truncates y coordinate in Vector3
 pub fn truncate_y_vector<S>(vector: Vector3<S>) -> Vector2<S> {
     Vector2::new(vector.x, vector.z)
 }
 
-
-
-
-pub unsafe fn calculate_angle(source: &LocalPlayer, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
+/// Calculates rotation angle from source player to dist Vector including settings
+pub unsafe fn calculate_angle(source: &dyn Player, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
     if let Some(source_bone_pos) = source.get_head_bone_position() {
         let punch_angle: Vector2<f32> = source.get_punch_angles() * 2.0;
         let diff: Vector3<f32> = dist - (source_bone_pos + source.get_view_offset());
