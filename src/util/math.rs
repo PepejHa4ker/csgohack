@@ -1,9 +1,7 @@
 use cgmath::{Vector4, Vector3, Vector2};
 use crate::entities::{LocalPlayer, Player};
-use crate::settings::Settings;
-
-
 #[repr(C)]
+#[derive(Debug)]
 pub struct Matrix3x4 {
     // X Y Z W
     pub x: Vector4<f32>,
@@ -12,6 +10,9 @@ pub struct Matrix3x4 {
     // X Y Z W
     pub z: Vector4<f32>,
 }
+
+
+use crate::settings::Settings;
 
 pub trait Normalize {
     fn normalize(&mut self) -> &Self;
@@ -46,7 +47,7 @@ pub fn truncate_y_vector<S>(vector: Vector3<S>) -> Vector2<S> {
 }
 
 /// Calculates rotation angle from source player to dist Vector including settings
-pub unsafe fn calculate_angle(source: &dyn Player, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
+pub unsafe fn calculate_angle(source: &LocalPlayer, dist: Vector3<f32>, settings: &Settings) -> Vector2<f32> {
     if let Some(source_bone_pos) = source.get_head_bone_position() {
         let punch_angle: Vector2<f32> = source.get_punch_angles() * 2.0;
         let diff: Vector3<f32> = dist - (source_bone_pos + source.get_view_offset());

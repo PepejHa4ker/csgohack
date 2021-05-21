@@ -6,12 +6,11 @@ use std::time::Duration;
 use itertools::Itertools;
 use crate::settings::Settings;
 use crate::entities::EnemySelectingStrategy::*;
-use crate::util::math::{fov, calculate_angle, truncate_y_vector};
+use crate::util::math::{fov, calculate_angle, truncate_y_vector, Matrix3x4};
 use std::slice::Iter;
 
 
 pub unsafe trait Player<'a> {
-
     /// Returns the base player pointer
     fn get_base_ptr(&self) -> RemotePtr<'a, usize>;
 
@@ -58,6 +57,18 @@ pub unsafe trait Player<'a> {
         self.get_bone_position(8)
     }
 
+    /// Returns the player bone matrix pointer
+    #[inline]
+    unsafe fn get_bone_matrix_ptr(&self) -> Option<usize> {
+        let global_bone_matrix_ptr = self.get_runtime().get_netvar_safely("m_dwBoneMatrix")?;
+        Some(self.get_base_ptr().add(global_bone_matrix_ptr).read())
+    }
+
+    /// Returns player head bone position vector
+    ///
+    /// # Arguments
+    ///
+    /// * `bone` - The bone index to get (there are 128 bones total)
     /// Returns player head bone position vector
     ///
     /// # Arguments
@@ -65,16 +76,8 @@ pub unsafe trait Player<'a> {
     /// * `bone` - The bone index to get (there are 128 bones total)
     #[inline]
     unsafe fn get_bone_position(&self, bone: usize) -> Option<Vector3<f32>> {
-        let runtime = self.get_runtime();
-        if let Some(bone_matrix) = runtime.get_netvar_safely("m_dwBoneMatrix") {
-            let self_bone = self.get_base_ptr().add(bone_matrix).cast::<usize>().read();
-            if let Some(x) = runtime.process.read(self_bone + ((0x30 * bone) + 0x0C)) {
-                let y: f32 = runtime.process.read(self_bone + ((0x30 * bone) + 0x1C)).unwrap();
-                let z: f32 = runtime.process.read(self_bone + ((0x30 * bone) + 0x2C)).unwrap();
-                return Some(Vector3::new(x, y, z));
-            }
-        }
-        None
+        let matrix: Matrix3x4 = self.get_runtime().process.read(self.get_bone_matrix_ptr()? + (0x30 * bone))?;
+        Some(Vector3::new(matrix.x.w, matrix.y.w, matrix.z.w))
     }
 
     /// Returns player health
@@ -109,7 +112,7 @@ pub unsafe trait Player<'a> {
     /// * `lp` - The local player reference
     #[inline]
     unsafe fn get_distance_flatten(&self, lp: &LocalPlayer) -> f32 {
-       truncate_y_vector(self.get_position() - lp.get_position()).magnitude()
+        truncate_y_vector(self.get_position() - lp.get_position()).magnitude()
     }
 
     /// Returns player index in map
@@ -258,7 +261,6 @@ pub struct EntityPlayer<'a> {
 }
 
 unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
-
     /// Returns the base entity player pointer (client.dll module offset + dwEntityList signature offset * (entity index * 0x10))
     fn get_base_ptr(&self) -> RemotePtr<'a, usize> {
         self.inner.clone()
@@ -272,7 +274,6 @@ unsafe impl<'a> Player<'a> for EntityPlayer<'a> {
 
 
 impl<'a> EntityPlayer<'a> {
-
     /// Returns entity player instance by index
     ///
     /// # Arguments
@@ -289,7 +290,6 @@ impl<'a> EntityPlayer<'a> {
 }
 
 unsafe impl<'a> Player<'a> for LocalPlayer<'a> {
-
     /// Returns the base local player pointer (client.dll module offset + dwLocalPlayer signature offset)
     fn get_base_ptr(&self) -> RemotePtr<'a, usize> {
         self.inner.clone()
@@ -302,7 +302,6 @@ unsafe impl<'a> Player<'a> for LocalPlayer<'a> {
 }
 
 impl<'a> LocalPlayer<'a> {
-
     /// Returns a new local player instance
     ///
     /// # Arguments
@@ -396,7 +395,6 @@ impl std::fmt::Display for EnemySelectingStrategy {
 }
 
 impl EnemySelectingStrategy {
-
     pub fn iter() -> Iter<'static, EnemySelectingStrategy> {
         static STRATEGIES: [EnemySelectingStrategy; 5] = [Health, Distance, DistanceFlatten, Angle, Index];
         STRATEGIES.iter()
