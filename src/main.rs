@@ -396,9 +396,9 @@ pub trait CheatModule {
 }
 
 fn main() {
-    // unsafe {
-    //     FreeConsole();
-    // }
+    unsafe {
+        FreeConsole();
+    }
 
 
     let mut cheats = Vec::<Box<dyn CheatModule>>::new();
