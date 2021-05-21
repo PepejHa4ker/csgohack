@@ -24,6 +24,7 @@ use crate::settings::Settings;
 use winapi::um::wincon::FreeConsole;
 use std::sync::{Arc, Mutex};
 use crate::gui::render::UI;
+use crate::data::weapon::WeaponId;
 
 pub mod entities;
 pub mod gui;
@@ -33,6 +34,7 @@ pub mod sigscan;
 pub mod cheats;
 pub mod settings;
 pub mod util;
+pub mod data;
 
 type Map<T> = BTreeMap<String, T>;
 
@@ -394,9 +396,9 @@ pub trait CheatModule {
 }
 
 fn main() {
-    unsafe {
-        FreeConsole();
-    }
+    // unsafe {
+    //     FreeConsole();
+    // }
 
 
     let mut cheats = Vec::<Box<dyn CheatModule>>::new();
@@ -449,6 +451,7 @@ fn inject_cheats(mut cheats: Vec<Box<dyn CheatModule>>) {
                 for cheat in &mut cheats {
                     cheat.handle(&player, &settings);
                 }
+
                 drop(settings);
             }
             sleep(Duration::from_millis(1));
@@ -500,7 +503,7 @@ fn scan_netvars(sigs: &Map<usize>, conf: &Config, client_module: &Module) -> Opt
     let first = sigs.get("dwGetAllClasses")?;
     let netvars = mem::csgo::NetvarManager::new(*first, client_module)?;
 
-    let mut res = BTreeMap::new();
+    let mut res = Map::new();
     for netvar in &conf.netvars {
         match netvars.get_offset(&netvar.table, &netvar.prop) {
             Some(o) => {

@@ -130,10 +130,9 @@ pub unsafe trait Player<'a> {
     unsafe fn get_crosshair_id(&self) -> Option<usize> {
         let temp: usize = self.read_netvar("m_iCrosshairId");
         if temp <= 0 || temp > 32 {
-            None
-        } else {
-            Some(temp)
+            return Some(temp);
         }
+        None
     }
 
     #[inline]
@@ -173,18 +172,20 @@ pub unsafe trait Player<'a> {
     }
 
     #[inline]
-    unsafe fn is_sniper_weapon_in_hand(&self) -> bool {
-        let runtime = self.get_runtime();
-        let init_wep: i32 = self.read_netvar("m_hActiveWeapon");
-        if let Some(weapon_entity) = runtime.read_offset::<i32>(runtime.get_signature("dwEntityList") + (((init_wep & 0xFFF) - 1) * 0x10) as usize, true) {
-            if let Some(idx) = runtime.get_netvar_safely("m_iItemDefinitionIndex") {
-                if let Some(my_weapon) = runtime.process.read::<i32>((weapon_entity as usize) + idx) {
-                    return my_weapon == 40 || my_weapon == 9 || my_weapon == 38 || my_weapon == 11;
-                }
-            }
-        }
+    unsafe fn get_active_weapon_handle(&self) -> i32 {
+        self.read_netvar("m_hActiveWeapon")
+    }
 
-        false
+    #[inline]
+    unsafe fn get_active_weapon_entity(&self, weapon_handle: i32) -> Option<i32> {
+        self.get_runtime().read_offset::<i32>(self.get_runtime().get_signature("dwEntityList") + (((weapon_handle & 0xFFF) - 1) * 0x10) as usize, true)
+    }
+
+    #[inline]
+    unsafe fn get_active_weapon_index(&self) -> Option<usize> {
+        let definition_index = self.get_runtime().get_netvar_safely("m_iItemDefinitionIndex")?;
+        let active_weapon_entity = self.get_active_weapon_entity(self.get_active_weapon_handle())? as usize;
+        self.get_runtime().process.read(active_weapon_entity + definition_index)
     }
 
     fn get_runtime(&self) -> &'a Runtime;

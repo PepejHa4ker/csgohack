@@ -5,6 +5,7 @@ use std::time::Instant;
 use std::time::Duration;
 use cgmath::MetricSpace;
 use crate::settings::Settings;
+use crate::data::weapon::WeaponId;
 
 
 cheat!(Trigger {
@@ -20,9 +21,11 @@ impl CheatModule for Trigger {
                         && enemy.is_alive()
                         && !enemy.is_immune()
                         && self.next_attack <= Instant::now()
-                        && player.get_position().distance(enemy.get_position()).to_radians() <= settings.trigger_distance as f32 {
-                        if settings.trigger_only_in_scope && (!player.is_scoped() && player.is_sniper_weapon_in_hand()) {
-                            return ();
+                        && enemy.get_distance_flatten(&player  ) <= settings.trigger_distance as f32 {
+                        if let Some(index) = player.get_active_weapon_index() {
+                            if settings.trigger_only_in_scope && WeaponId::get_from_index(index).is_sniper() {
+                                return ();
+                            }
                         }
                         player.force_attack();
                         self.next_attack = Instant::now() + Duration::from_millis(settings.trigger_delay as u64);

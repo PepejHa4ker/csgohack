@@ -1,4 +1,5 @@
 use std::ffi::CString;
+use std::slice::Iter;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -114,6 +115,7 @@ pub enum WeaponId {
     GloveHydra,
 }
 
+#[derive(Debug)]
 pub struct WeaponInfo {
     pad1: [u8; 32],
     max_clip: i32,
@@ -147,14 +149,103 @@ pub struct WeaponInfo {
     recovery_timestand: f32,
 }
 
-
-
-
+impl std::fmt::Display for WeaponId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 impl WeaponId {
-
-    pub fn get_from_id(id: usize) -> Self {
-        WeaponId::Ak47
+    pub fn get_from_index(id: usize) -> Self {
+        match id {
+            1 => Self::Deagle,
+            2 => Self::Elite,
+            3 => Self::FiveSeven,
+            4 => Self::Glock,
+            7 => Self::Ak47,
+            8 => Self::Aug,
+            9 => Self::Awp,
+            10 => Self::Famas,
+            11 => Self::G3sg1,
+            13 => Self::GalilAr,
+            14 => Self::M249,
+            16 => Self::M4a1,
+            17 => Self::Mac10,
+            19 => Self::P90,
+            20 => Self::ZoneRepulsor,
+            23 => Self::Mp5sd,
+            24 => Self::Ump45,
+            25 => Self::Xm1014,
+            25 => Self::Bizon,
+            26 => Self::Mag7,
+            27 => Self::Negev,
+            28 => Self::SawedOff,
+            29 => Self::Tec9,
+            30 => Self::Taser,
+            31 => Self::Hkp2000,
+            32 => Self::Mp7,
+            35 => Self::Mp9,
+            34 => Self::Nova,
+            35 => Self::P250,
+            36 => Self::Shield,
+            37 => Self::Scar20,
+            38 => Self::Sg553,
+            39 => Self::Ssg08,
+            40 => Self::GoldenKnife,
+            41 => Self::Knife,
+            43 => Self::FlashBang,
+            45 => Self::HeGrenade,
+            46 => Self::SmokeGrenade,
+            47 => Self::Molotov,
+            48 => Self::Decoy,
+            49 => Self::IncGrenade,
+            50 => Self::C4,
+            57 => Self::HealthShot,
+            59 => Self::KnifeT,
+            60 => Self::M4a1S,
+            61 => Self::UspS,
+            63 => Self::Cz75a,
+            68 => Self::TaGrenade,
+            75 => Self::Axe,
+            76 => Self::Hammer,
+            78 => Self::Spanner,
+            80 => Self::GhostKnife,
+            81 => Self::FireBomb,
+            82 => Self::Diversion,
+            83 => Self::FragGrenade,
+            84 => Self::SnowBall,
+            85 => Self::BumpMine,
+            500 => Self::Bayonet,
+            503 => Self::ClassicKnife,
+            505 => Self::Flip,
+            506 => Self::Gut,
+            507 => Self::Karambit,
+            508 => Self::M9Bayonet,
+            509 => Self::Huntsman,
+            512 => Self::Falchion,
+            514 => Self::Bowie,
+            515 => Self::Butterfly,
+            516 => Self::Daggers,
+            517 => Self::Paracord,
+            518 => Self::SurvivalKnife,
+            519 => Self::Ursus,
+            520 => Self::Navaja,
+            521 => Self::NomadKnife,
+            522 => Self::Stiletto,
+            523 => Self::Talon,
+            525 => Self::SkeletonKnife,
+            4725 => Self::GloveStuddedBrokenFang,
+            5027 => Self::GloveStuddedBloodHound,
+            5028 => Self::GloveT,
+            5029 => Self::GloveCt,
+            5030 => Self::GloveSporty,
+            5031 => Self::GloveSlick,
+            5032 => Self::GloveLeatherwrap,
+            5033 => Self::GloveMotorcycle,
+            5034 => Self::GloveSpecialist,
+            5035 => Self::GloveHydra,
+            _ => panic!("Invalid Weapon index")
+        }
     }
 
     pub fn is_sniper(&self) -> bool {
@@ -162,49 +253,8 @@ impl WeaponId {
             WeaponId::Scar20 |
             WeaponId::Awp |
             WeaponId::Sg553 |
-            WeaponId::G3sg1  => true,
-            _ =>  false
-        }
-    }
-
-    pub fn get_weapon_index(&self) -> i32 {
-        return match self {
-            WeaponId::Glock => 1,
-            WeaponId::Hkp2000 => 2,
-            WeaponId::UspS => 3,
-            WeaponId::Elite => 4,
-            WeaponId::P250 => 5,
-            WeaponId::Tec9 => 6,
-            WeaponId::FiveSeven => 7,
-            WeaponId::Cz75a => 8,
-            WeaponId::Deagle => 9,
-            WeaponId::Revolver => 10,
-            WeaponId::Nova => 11,
-            WeaponId::Xm1014 => 12,
-            WeaponId::SawedOff => 13,
-            WeaponId::Mag7 => 14,
-            WeaponId::M249 => 15,
-            WeaponId::Negev => 16,
-            WeaponId::Mac10 => 17,
-            WeaponId::Mp9 => 18,
-            WeaponId::Mp7 => 19,
-            WeaponId::Mp5sd => 20,
-            WeaponId::Ump45 => 21,
-            WeaponId::P90 => 22,
-            WeaponId::Bizon => 23,
-            WeaponId::GalilAr => 24,
-            WeaponId::Famas => 25,
-            WeaponId::Ak47 => 26,
-            WeaponId::M4a1 => 27,
-            WeaponId::M4a1S => 28,
-            WeaponId::Ssg08 => 29,
-            WeaponId::Sg553 => 30,
-            WeaponId::Aug => 31,
-            WeaponId::Awp => 32,
-            WeaponId::G3sg1 => 33,
-            WeaponId::Scar20 => 34,
-            WeaponId::Taser => 39,
-            _ => 0
+            WeaponId::G3sg1 => true,
+            _ => false
         };
     }
 
@@ -232,22 +282,22 @@ impl WeaponId {
             WeaponId::Mac10 |
             WeaponId::Mp9 |
             WeaponId::Mp7 |
-            WeaponId::Mp5sd|
+            WeaponId::Mp5sd |
             WeaponId::Ump45 |
             WeaponId::P90 |
             WeaponId::Bizon => 37,
 
             WeaponId::GalilAr |
-            WeaponId::Famas|
+            WeaponId::Famas |
             WeaponId::Ak47 |
-            WeaponId::M4a1|
-            WeaponId::M4a1S|
+            WeaponId::M4a1 |
+            WeaponId::M4a1S |
             WeaponId::Ssg08 |
-            WeaponId::Sg553|
-            WeaponId::Aug|
-            WeaponId::Awp|
+            WeaponId::Sg553 |
+            WeaponId::Aug |
+            WeaponId::Awp |
             WeaponId::G3sg1 |
-            WeaponId::Scar20|
+            WeaponId::Scar20 |
             WeaponId::Taser => 38,
             _ => 0
         };

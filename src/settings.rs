@@ -1,6 +1,8 @@
 use winapi::um::winuser::VK_LBUTTON;
 use crate::entities::EnemySelectingStrategy;
 use crate::entities::EnemySelectingStrategy::DistanceFlatten;
+use crate::data::weapon::WeaponId;
+use glium::buffer::Content;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Settings {
@@ -22,6 +24,7 @@ pub struct Settings {
     pub wh_enabled: bool,
     pub trigger_delay: u32,
     pub trigger_only_in_scope: bool,
+    pub trigger_allowed_weapons: Vec<WeaponId>,
     pub recoil_enabled: bool,
     pub recoil_shots: i32,
     pub fov: i32,
@@ -52,6 +55,7 @@ impl Settings {
             trigger_delay: 0,
             trigger_distance: 100,
             trigger_only_in_scope: true,
+            trigger_allowed_weapons: Vec::with_capacity(WeaponId::get_elements_size()),
             recoil_enabled: false,
             fov: 90,
             fov_enabled: false,

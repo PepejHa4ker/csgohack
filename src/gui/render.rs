@@ -112,7 +112,7 @@ impl UI {
                         };
                         ComboBox::new(im_str!("Selecting Strategy"))
                             .preview_mode(ComboBoxPreviewMode::Full)
-                            .preview_value( ImStr::from_cstr_unchecked(CString::new(actual_settings.enemy_selecting_strategy.get_name()).unwrap().as_c_str()))
+                            .preview_value( ImStr::from_cstr_unchecked(CString::new(actual_settings.enemy_selecting_strategy.to_string()).unwrap().as_c_str()))
                             .build(&ui, || {
                                 for value in EnemySelectingStrategy::iter().map(|e| *e) {
                                     if Selectable::new( ImStr::from_cstr_unchecked(CString::new(value.to_string()).unwrap().as_c_str())).selected(actual_settings.enemy_selecting_strategy == value).build(&ui) {
