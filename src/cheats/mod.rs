@@ -1,5 +1,3 @@
-
-
 mod aimbot;
 mod bhop;
 mod flash;
@@ -24,6 +22,7 @@ pub use crate::cheats::fast_tap::*;
 #[macro_export]
 macro_rules! cheat {
     ($name:ident { $($field:ident : $ty:ty = $value:expr),* }) => {
+        #[derive(Debug)]
         pub struct $name {
             $($field: $ty),*
         }
@@ -37,10 +36,18 @@ macro_rules! cheat {
             }
         }
 
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                 write!(f, "{:?}", self)
+            }
+        }
+
 
     };
 
     ($name:ident) => {
+
+       #[derive(Debug)]
         pub struct $name {}
         impl $name {
             pub fn new() -> Self {
@@ -48,5 +55,11 @@ macro_rules! cheat {
 
             }
         }
-    }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                 write!(f, "{:?}", self)
+            }
+        }
+    };
 }

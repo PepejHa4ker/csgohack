@@ -8,7 +8,7 @@ use crate::entities::{Player, LocalPlayer};
 
 cheat!(BHop);
 
-impl CheatModule for BHop {
+unsafe impl CheatModule for BHop {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.bhop_enabled {
             if GetAsyncKeyState(VK_SPACE) != 0 {

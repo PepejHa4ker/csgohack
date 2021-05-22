@@ -59,9 +59,10 @@ pub unsafe trait Player<'a> {
 
     /// Returns the player bone matrix pointer
     #[inline]
-    unsafe fn get_bone_matrix_ptr(&self) -> Option<usize> {
-        let global_bone_matrix_ptr = self.get_runtime().get_netvar_safely("m_dwBoneMatrix")?;
-        Some(self.get_base_ptr().add(global_bone_matrix_ptr).read())
+    unsafe fn get_bone_matrix_ptr(&self) -> usize {
+        self.read_netvar("m_dwBoneMatrix")
+        // let global_bone_matrix_ptr = self.get_runtime().get_netvar_safely("m_dwBoneMatrix")?;
+        // Some(self.get_base_ptr().add(global_bone_matrix_ptr).read())
     }
 
     /// Returns player head bone position vector
@@ -76,7 +77,7 @@ pub unsafe trait Player<'a> {
     /// * `bone` - The bone index to get (there are 128 bones total)
     #[inline]
     unsafe fn get_bone_position(&self, bone: usize) -> Option<Vector3<f32>> {
-        let matrix: Matrix3x4 = self.get_runtime().process.read(self.get_bone_matrix_ptr()? + (0x30 * bone))?;
+        let matrix: Matrix3x4 = self.get_runtime().process.read(self.get_bone_matrix_ptr() + (0x30 * bone))?;
         Some(Vector3::new(matrix.x.w, matrix.y.w, matrix.z.w))
     }
 
@@ -161,8 +162,8 @@ pub unsafe trait Player<'a> {
 
     /// Returns player crosshair id
     #[inline]
-    unsafe fn get_crosshair_id(&self) -> Option<usize> {
-        let temp: usize = self.read_netvar("m_iCrosshairId");
+    unsafe fn get_crosshair_id(&self) -> Option<i32> {
+        let temp: i32 = self.read_netvar("m_iCrosshairId");
         if temp <= 0 || temp > 32 {
             return Some(temp);
         }
@@ -280,8 +281,8 @@ impl<'a> EntityPlayer<'a> {
     ///
     /// * `runtime` - The runtime reference to read the signature
     /// * `index` The entity index to read
-    pub unsafe fn get(runtime: &'a Runtime, index: usize) -> Option<EntityPlayer<'a>> {
-        let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index * 0x10), true)?;
+    pub unsafe fn get(runtime: &'a Runtime, index: i32) -> Option<EntityPlayer<'a>> {
+        let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index as usize * 0x10), true)?;
         Some(EntityPlayer {
             runtime,
             inner,

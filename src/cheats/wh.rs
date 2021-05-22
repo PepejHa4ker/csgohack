@@ -55,7 +55,7 @@ fn glow_enemy_by_color(data: [f32; 4], full_bloom: bool) -> GlowEnemy {
     }
 }
 
-impl CheatModule for WallHack {
+unsafe impl CheatModule for WallHack {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         for current_player in player.get_runtime().get_entities() {
             let glow_manager = player.get_glow_object();

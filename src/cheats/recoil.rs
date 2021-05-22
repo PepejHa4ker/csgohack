@@ -11,7 +11,7 @@ cheat!(Recoil {
 
 
 
-impl CheatModule for Recoil {
+unsafe impl CheatModule for Recoil {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.recoil_enabled {
             if player.get_shots_fired() >= settings.recoil_shots {

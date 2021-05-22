@@ -6,7 +6,7 @@ use crate::entities::{Player, LocalPlayer};
 
 cheat!(Radar);
 
-impl CheatModule for Radar {
+unsafe impl CheatModule for Radar {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.radar_enabled {
             for enemy in player.get_runtime().get_entities() {

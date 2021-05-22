@@ -21,10 +21,10 @@ use crate::entities::{LocalPlayer, Player, EntityPlayer};
 use crate::cheats::*;
 use std::fmt::Debug;
 use crate::settings::Settings;
-use winapi::um::wincon::FreeConsole;
+
 use std::sync::{Arc, Mutex};
 use crate::gui::render::UI;
-use crate::data::weapon::WeaponId;
+
 
 pub mod entities;
 pub mod gui;
@@ -301,12 +301,14 @@ impl Runtime {
     pub unsafe fn get_entities(&self) -> impl Iterator<Item=EntityPlayer> {
         (0..16).map(move |i| EntityPlayer::get(self, i))
             .flatten()
+            .filter(|entity| entity.is_alive())
     }
 
     #[inline]
     pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
         self.get_entities()
             .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
+
     }
 
     #[inline]
@@ -391,14 +393,20 @@ impl<'a, T> RemotePtr<'a, T> {
     }
 }
 
-pub trait CheatModule {
+pub unsafe trait CheatModule {
+
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings);
+
+    unsafe fn render_ui_tab<'ui>(&self, ui: &'ui mut Ui, player: &LocalPlayer, settings: &mut Settings) {
+        todo!()
+    }
+
 }
 
 fn main() {
-    unsafe {
-        FreeConsole();
-    }
+    // unsafe {
+    //     FreeConsole();
+    // }
 
 
     let mut cheats = Vec::<Box<dyn CheatModule>>::new();

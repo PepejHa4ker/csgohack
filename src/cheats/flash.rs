@@ -6,7 +6,7 @@ use crate::entities::{Player, LocalPlayer};
 
 cheat!(AntiFlash);
 
-impl CheatModule for AntiFlash {
+unsafe impl CheatModule for AntiFlash {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.flash_enabled {
             if player.get_flash_duration() != 0.0 {

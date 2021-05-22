@@ -1,5 +1,5 @@
 use crate::{CheatModule, util};
-use cgmath::{Array, Zero, MetricSpace, InnerSpace};
+use cgmath::{Array, Zero, InnerSpace};
 use crate::cheat;
 use crate::entities::{LocalPlayer, Player, get_enemies_by_strategy};
 use crate::settings::Settings;
@@ -11,7 +11,7 @@ cheat!(Aimbot);
 
 
 
-impl CheatModule for Aimbot {
+unsafe impl CheatModule for Aimbot {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.aimbot_enabled {
             if player.is_alive() {

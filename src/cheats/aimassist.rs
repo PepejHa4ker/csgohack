@@ -1,4 +1,4 @@
-use crate::{CheatModule, Runtime};
+use crate::{CheatModule};
 use crate::cheat;
 use winapi::um::winuser::GetAsyncKeyState;
 use cgmath::{
@@ -13,8 +13,7 @@ use crate::util::math::calculate_angle;
 cheat!(AimAssist);
 
 
-
-impl CheatModule for AimAssist {
+unsafe impl CheatModule for AimAssist {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.aim_assist_enabled {
             if GetAsyncKeyState(settings.aim_assist_key) == 1 {

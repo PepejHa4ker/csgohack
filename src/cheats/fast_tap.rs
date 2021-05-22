@@ -12,7 +12,7 @@ cheat!(FastTap {
 
 
 
-impl CheatModule for FastTap {
+unsafe impl CheatModule for FastTap {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
         if settings.fast_tap_enabled {
             if GetAsyncKeyState(settings.fast_tap_key) != 0 {
