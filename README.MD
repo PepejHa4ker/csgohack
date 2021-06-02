@@ -4,7 +4,7 @@
 
 # CsgoHack is a free and open-source memory hacking cheat.
 
-[Discord](https://disk.yandex.ru/d/gLTyMHZXFtGSOQ)
+[Discord](https://discord.gg/NQxs6hpKC7)
 
 ## Issues
 If you notice any bugs or missing features, you can let us know by opening an issue [here](https://github.com/PepejHa4kker/csgohack/issues) or [discord](https://discord.gg/NQxs6hpKC7).
