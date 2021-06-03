@@ -30,7 +30,7 @@ For those who are unfamiliar with the license, here is a summary of its main poi
 2. CD into the local repository.
 4. Open the folder as a Rust project in your preferred IDE.
 5. Install rust toolchain using https://rustup.rs/
-6. Install VS 15 RD [Click here](https://www.microsoft.com/ru-ru/download/details.aspx?id=48145)
+6. Install Visual C++ 2015 [Click here](https://www.microsoft.com/ru-ru/download/details.aspx?id=48145)
 
 ## Build
 cargo build --package csgohack --bin csgohack --release --target=i586-pc-windows-msvc
