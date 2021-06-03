@@ -26,11 +26,12 @@ For those who are unfamiliar with the license, here is a summary of its main poi
 - **Your modified application must also be licensed under the GPL**
 
 ## Setting up a Workspace
-1. Clone the repository using `git clone https://github.com/PepejHa4ker/csgohack`.
-2. CD into the local repository.
-4. Open the folder as a Rust project in your preferred IDE.
-5. Install rust toolchain using https://rustup.rs/
-6. Install Visual C++ 2015 [Click here](https://www.microsoft.com/ru-ru/download/details.aspx?id=48145)
+1. Install rust toolchain using https://rustup.rs/
+2. Install Visual C++ 2015 [Click here](https://www.microsoft.com/ru-ru/download/details.aspx?id=48145)
+3. Clone the repository using `git clone https://github.com/PepejHa4ker/csgohack`.
+4. CD into the local repository.
+5. Open the folder as a Rust project in your preferred IDE.
+6. DONE!!!
 
 ## Build
 cargo build --package csgohack --bin csgohack --release --target=i586-pc-windows-msvc
