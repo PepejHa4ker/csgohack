@@ -8,12 +8,23 @@ use crate::settings::Settings;
 use crate::entities::EnemySelectingStrategy::*;
 use crate::util::math::{fov, calculate_angle, truncate_y_vector, Matrix3x4};
 use std::slice::Iter;
+use serde::{Serialize, Deserialize};
 
+#[macro_export]
+macro_rules! declare_netvar_fns {
+    (($fn_name: ident, $return_ty: ty, $netvar: literal), *) => {
+        *(
+            #[inline]
+            unsafe fn $fn_name(&self) -> $return_ty {
+                self.read_netvar($netvar)
+            }
+        )
+    }
+}
 
 pub unsafe trait Player<'a> {
     /// Returns the base player pointer
     fn get_base_ptr(&self) -> RemotePtr<'a, usize>;
-
 
     /// Adds the netvar offset to base player pointer
     #[inline]
@@ -81,6 +92,8 @@ pub unsafe trait Player<'a> {
         Some(Vector3::new(matrix.x.w, matrix.y.w, matrix.z.w))
     }
 
+
+
     /// Returns player health
     #[inline]
     unsafe fn get_health(&self) -> usize {
@@ -97,10 +110,35 @@ pub unsafe trait Player<'a> {
     #[inline]
     unsafe fn is_alive(&self) -> bool {
         let health = self.get_health();
-        health > 0 && health <= 100
+        (0..=100).contains(&health)
     }
 
-    /// Returns player posiiton vector
+    #[inline]
+    unsafe fn get_client_network_vtable_ptr(&self) -> usize {
+        self.get_base_ptr().add(0x08).cast().read()
+    }
+
+    #[inline]
+    unsafe fn get_client_class_function_ptr(&self) -> Option<usize> {
+        let client_network_vtable_ptr = self.get_client_network_vtable_ptr();
+        self.get_runtime().process.read(client_network_vtable_ptr + 2 * 0x4)
+    }
+
+    #[inline]
+    unsafe fn get_client_class_struct_ptr(&self) -> Option<usize> {
+        let client_class_function_ptr = self.get_client_class_function_ptr()?;
+        self.get_runtime().process.read(client_class_function_ptr + 0x1) //pointer to the ClientClass struct out of the mov eax
+    }
+
+    #[inline]
+    unsafe fn get_client_class_id(&self) -> usize {
+        let client_class_struct_ptr = self.get_client_class_struct_ptr().unwrap();
+        self.get_runtime().process.read(client_class_struct_ptr + 0x14).unwrap()
+    }
+
+
+
+    /// Returns player position vector
     #[inline]
     unsafe fn get_position(&self) -> Vector3<f32> {
         self.read_netvar("m_vecOrigin")
@@ -162,13 +200,11 @@ pub unsafe trait Player<'a> {
 
     /// Returns player crosshair id
     #[inline]
-    unsafe fn get_crosshair_id(&self) -> Option<i32> {
-        let temp: i32 = self.read_netvar("m_iCrosshairId");
-        if temp <= 0 || temp > 32 {
-            return Some(temp);
-        }
-        None
+    unsafe fn get_crosshair_id(&self) -> i32 {
+        self.read_netvar("m_iCrosshairId")
     }
+
+
 
     /// Returns true if player is spotted
     #[inline]
@@ -282,6 +318,9 @@ impl<'a> EntityPlayer<'a> {
     /// * `runtime` - The runtime reference to read the signature
     /// * `index` The entity index to read
     pub unsafe fn get(runtime: &'a Runtime, index: i32) -> Option<EntityPlayer<'a>> {
+        if index <= 0 {
+            return None
+        }
         let inner = runtime.read_ptr::<usize>(runtime.get_signature("dwEntityList") + (index as usize * 0x10), true)?;
         Some(EntityPlayer {
             runtime,
@@ -370,7 +409,8 @@ impl<'a> LocalPlayer<'a> {
     #[inline]
     pub unsafe fn set_view_angles(&self, angles: Vector2<f32>) {
         self.runtime.read_ptr::<usize>(
-            self.runtime.get_signature("dwClientState"), false).unwrap().add(self.runtime.get_signature("dwClientState_ViewAngles")).cast().write(&angles);
+            self.runtime.get_signature("dwClientState"), false).unwrap()
+            .add(self.runtime.get_signature("dwClientState_ViewAngles")).cast().write(&angles);
     }
 
     /// Returns the player aim punch angle vector value
@@ -380,7 +420,7 @@ impl<'a> LocalPlayer<'a> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum EnemySelectingStrategy {
     Health,
     Distance,

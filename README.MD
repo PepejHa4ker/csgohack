@@ -40,4 +40,7 @@ cargo build --package csgohack --bin csgohack --release --target=i586-pc-windows
 ## Contributing
 We appreciate contributions. So if you want to support us, feel free to make changes to CsgoHack's source code and submit a pull request.
 
+<p>
+    <img src="https://raw.githubusercontent.com/PepejHa4ker/csgohack/master/resources/demo/demo_main.png">
+</p>
 

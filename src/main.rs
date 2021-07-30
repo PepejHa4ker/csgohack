@@ -5,10 +5,7 @@ extern crate log;
 #[macro_use]
 extern crate nom;
 
-
-pub use ::imgui::*;
 use winapi::_core::marker::PhantomData;
-
 
 use crate::mem::{Process, Module};
 
@@ -23,7 +20,16 @@ use std::fmt::Debug;
 use crate::settings::Settings;
 
 use std::sync::{Arc, Mutex};
-use crate::gui::render::UI;
+// use crate::gui::render::UI;
+use crate::gui::app::App;
+use std::thread;
+use std::rc::Rc;
+use eframe::egui;
+use crate::gui::components::frame_history::FrameHistory;
+use eframe::egui::Ui;
+use winapi::um::wincon::FreeConsole;
+use crate::util::helpers::cheat_dir;
+use crate::cheats::fov::FOVOverride;
 
 
 pub mod entities;
@@ -299,7 +305,7 @@ impl Runtime {
 
     #[inline]
     pub unsafe fn get_entities(&self) -> impl Iterator<Item=EntityPlayer> {
-        (0..16).map(move |i| EntityPlayer::get(self, i))
+        (1..16).map(move |i| EntityPlayer::get(self, i))
             .flatten()
             .filter(|entity| entity.is_alive())
     }
@@ -308,7 +314,6 @@ impl Runtime {
     pub unsafe fn get_enemies(&self) -> impl Iterator<Item=EntityPlayer> {
         self.get_entities()
             .filter(move |enemy| enemy.get_team() != self.get_local_player().unwrap().get_team())
-
     }
 
     #[inline]
@@ -359,7 +364,6 @@ pub struct RemotePtr<'a, T> {
 }
 
 impl<'a, T> RemotePtr<'a, T> {
-
     #[inline]
     pub unsafe fn read(&self) -> T {
         self.runtime
@@ -393,32 +397,28 @@ impl<'a, T> RemotePtr<'a, T> {
     }
 }
 
-pub unsafe trait CheatModule {
-
+pub unsafe trait CheatModule: Send {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings);
-
-    unsafe fn render_ui_tab<'ui>(&self, ui: &'ui mut Ui, player: &LocalPlayer, settings: &mut Settings) {
-        todo!()
-    }
-
 }
 
 fn main() {
-    // unsafe {
-    //     FreeConsole();
-    // }
+    unsafe {
+        FreeConsole();
+    }
+    std::env::set_current_dir(cheat_dir()).expect("chdir failed");
 
 
-    let mut cheats = Vec::<Box<dyn CheatModule>>::new();
+    let mut cheats= Vec::<Box<dyn CheatModule>>::with_capacity(10);
     cheats.push(Box::new(WallHack::new()));
     cheats.push(Box::new(BHop::new()));
+    cheats.push(Box::new(AimAssist::new()));
     cheats.push(Box::new(Trigger::new()));
     cheats.push(Box::new(Aimbot::new()));
-    cheats.push(Box::new(AimAssist::new()));
     cheats.push(Box::new(Radar::new()));
     cheats.push(Box::new(Recoil::new()));
     cheats.push(Box::new(FastTap::new()));
     cheats.push(Box::new(AntiFlash::new()));
+    cheats.push(Box::new(FOVOverride::new()));
     inject_cheats(cheats);
 }
 
@@ -434,13 +434,13 @@ fn inject_cheats(mut cheats: Vec<Box<dyn CheatModule>>) {
 
 
     let client = process.get_module("client.dll")
-        .or_else(||process.get_module("client_panorama.dll"))
+        .or_else(|| process.get_module("client_panorama.dll"))
         .unwrap();
     let engine = process.get_module("engine.dll").unwrap().base;
     let sigs = scan_signatures(&config, &process);
     let netvars = scan_netvars(&sigs, &config, &client).unwrap();
-    let settings = Arc::new(Mutex::new(Settings::new()));
-    let mut runtime = Runtime {
+    let settings = Arc::new(Mutex::new(Settings::load().expect("Failed to load config")));
+    let runtime = Runtime {
         process,
         client: client.base,
         engine,
@@ -450,20 +450,24 @@ fn inject_cheats(mut cheats: Vec<Box<dyn CheatModule>>) {
     };
 
 
-    unsafe {
-        UI::start(&runtime);
-        let settings = Arc::clone(&runtime.settings);
-        loop {
+    let settings = Arc::clone(&runtime.settings);
+    let app = App::create(settings);
+    let native_options = eframe::NativeOptions::default();
+    thread::spawn(move || {
+        eframe::run_native(Box::new(app), native_options);
+    });
+    let settings = Arc::clone(&runtime.settings);
+    loop {
+        let settings = settings.lock().unwrap();
+        unsafe {
             if let Some(player) = runtime.get_local_player() {
-                let settings = settings.lock().unwrap();
                 for cheat in &mut cheats {
                     cheat.handle(&player, &settings);
                 }
-
-                drop(settings);
             }
-            sleep(Duration::from_millis(1));
         }
+        drop(settings);
+        sleep(Duration::from_millis(1));
     }
 }
 

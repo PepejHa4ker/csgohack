@@ -1,12 +1,13 @@
-mod aimbot;
-mod bhop;
-mod flash;
-mod radar;
-mod recoil;
-mod trigger;
-mod wh;
-mod aimassist;
-mod fast_tap;
+pub(crate) mod aimbot;
+pub(crate) mod bhop;
+pub(crate) mod flash;
+pub(crate) mod radar;
+pub(crate) mod recoil;
+pub(crate) mod trigger;
+pub(crate) mod wh;
+pub(crate) mod aimassist;
+pub(crate) mod fast_tap;
+pub(crate) mod fov;
 
 pub use crate::cheats::aimbot::*;
 pub use crate::cheats::bhop::*;

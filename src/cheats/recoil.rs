@@ -3,6 +3,9 @@ use cgmath::{Vector2, InnerSpace};
 use crate::cheat;
 use crate::settings::Settings;
 use crate::entities::{Player, LocalPlayer};
+use eframe::egui::{CtxRef, Ui, Widget};
+use crate::gui::app::layout;
+use crate::gui::ToggleSwitch;
 
 
 cheat!(Recoil {
@@ -10,6 +13,15 @@ cheat!(Recoil {
 });
 
 
+pub fn render_ui_tab(ctx: &CtxRef, settings: &mut Settings, ui: &mut Ui) {
+    ui.with_layout(layout(), |ui| {
+        ui.label("Recoil Control")
+    });
+    ToggleSwitch::new(&mut settings.aimbot_rctl, "Enabled").ui(ui);
+
+    ui.separator();
+
+}
 
 unsafe impl CheatModule for Recoil {
     unsafe fn handle(&mut self, player: &LocalPlayer, settings: &Settings) {
@@ -27,4 +39,5 @@ unsafe impl CheatModule for Recoil {
             }
         }
     }
+
 }

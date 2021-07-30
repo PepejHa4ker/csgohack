@@ -3,6 +3,11 @@ use cgmath::{Vector4};
 use crate::cheat;
 use crate::settings::Settings;
 use crate::entities::{Player, LocalPlayer};
+use eframe::egui::{CtxRef, Ui, Color32, Rgba, menu, Widget};
+use crate::gui::app::layout;
+use std::sync::Arc;
+use std::sync::Mutex;
+use crate::gui::ToggleSwitch;
 
 
 cheat!(WallHack);
@@ -34,18 +39,18 @@ struct GlowEnemy {
 //
 // };
 
-fn convert_array_to_vector(data: [f32; 4]) -> Vector4<f32> {
+fn convert_color_to_vector(color: Color32) -> Vector4<f32> {
     Vector4::new(
-        *data.get(0).unwrap(),
-        *data.get(1).unwrap(),
-        *data.get(2).unwrap(),
-        *data.get(3).unwrap(),
+        color.r() as f32/255.0,
+        color.g() as f32/255.0,
+        color.b() as f32/255.0,
+        color.a() as f32/255.0,
     )
 }
 
-fn glow_enemy_by_color(data: [f32; 4], full_bloom: bool) -> GlowEnemy {
+fn glow_enemy_by_color(color: Color32, full_bloom: bool) -> GlowEnemy {
     GlowEnemy {
-        color: convert_array_to_vector(data),
+        color: convert_color_to_vector(color),
         padding: [0; 8],
         unknown: 1.0,
         padding2: [0; 4],
@@ -53,6 +58,30 @@ fn glow_enemy_by_color(data: [f32; 4], full_bloom: bool) -> GlowEnemy {
         render_unoccluded: false,
         full_bloom,
     }
+}
+
+
+pub fn render_ui_tab(ctx: &CtxRef, settings: &mut Settings, ui: &mut Ui) {
+    ui.with_layout(layout(), |ui| {
+        ui.label("Wall Hack");
+    });
+    ToggleSwitch::new(&mut settings.wh_enabled, "Enabled").ui(ui);
+    ui.horizontal(|ui| {
+        ui.color_edit_button_srgba(&mut settings.wh_enemy_color);
+        ui.label("Enemy color");
+    });
+    ui.horizontal(|ui| {
+        ui.color_edit_button_srgba(&mut settings.wh_local_color);
+        ui.label("Team color");
+    });
+    ui.horizontal(|ui| {
+        ui.color_edit_button_srgba(&mut settings.wh_inactive_color);
+        ui.label("Inactive color");
+    });
+    ui.separator();
+
+
+
 }
 
 unsafe impl CheatModule for WallHack {
@@ -70,7 +99,7 @@ unsafe impl CheatModule for WallHack {
                     glow.cast().write(&glow_enemy_by_color(settings.wh_local_color, settings.wh_full_bloom));
                 }
             } else {
-                glow.cast().write(&glow_enemy_by_color([0.0, 0.0, 0.0, 0.0], settings.wh_full_bloom));
+                glow.cast().write(&glow_enemy_by_color(Color32::from_black_alpha(255), settings.wh_full_bloom));
             }
         }
     }

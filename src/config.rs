@@ -111,7 +111,7 @@ impl Config {
                 },
                 Signature {
                     name: "dwClientState_ViewAngles".to_string(),
-                    pattern: "F3 0F 11 80 ? ? ? ? D9 46 04 D9 05".to_string(),
+                    pattern: "F3 0F 11 80 ? ? ? ? F3 0F 10 44 24 38".to_string(),
                     module: "engine.dll".to_string(),
                     offsets: vec![4],
                     extra: 0,
