@@ -4,10 +4,10 @@
 
 # CsgoHack is a free and open-source memory hacking cheat.
 
-[Discord](https://discord.gg/NQxs6hpKC7)
+[Discord](https://discord.gg/6uA5P7uh)
 
 ## Issues
-If you notice any bugs or missing features, you can let us know by opening an issue [here](https://github.com/PepejHa4kker/csgohack/issues) or [discord](https://discord.gg/NQxs6hpKC7).
+If you notice any bugs or missing features, you can let us know by opening an issue [here](https://github.com/PepejHa4kker/csgohack/issues) or [discord](https://discord.gg/6uA5P7uh).
 
 ## License
 This project is subject to the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html). This does only apply for source code located directly in this clean repository. During the development and compilation process, additional source code may be used to which we have obtained no rights. Such code is not covered by the GPL license.
